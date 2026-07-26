@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="roles_array">
+        <item>USER</item>
+        <item>MODERATOR</item>
+        <item>ADMIN</item>
+    </string-array>
+
+    <string-array name="ad_types">
+        <item>Ищу игрока</item>
+        <item>Ищу лёд</item>
+        <item>Товарищеский матч</item>
+        <item>Ищу специалиста</item>
+    </string-array>
+
+    <string-array name="ad_subtypes_for_type1"> <!-- для типа "Ищу игрока" -->
+        <item>Вратаря</item>
+        <item>Полевого</item>
+    </string-array>
+    <string-array name="ad_subtypes_for_type2"> <!-- для типа "Ищу лёд" -->
+        <item>Вратарь</item>
+        <item>Полевой</item>
+    </string-array>
+    <string-array name="ad_subtypes_for_type3"> <!-- для типа "Товарищеский матч" -->
+        <item>Ищу</item>
+        <item>Предлагаю</item>
+    </string-array>
+    <string-array name="ad_subtypes_for_type4"> <!-- для типа "Ищу специалиста" -->
+        <item>Судья</item>
+        <item>Фотограф</item>
+        <item>Медик</item>
+        <item>Тренер</item>
+    </string-array>
+
+</resources>
+

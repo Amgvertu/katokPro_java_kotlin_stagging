@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Панель фильтров -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/card_background"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp"
+        android:elevation="2dp">
+
+        <!-- Поиск по рекламодателю -->
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Поиск по рекламодателю"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="8dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_spinner"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Горизонтальные фильтры -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Статус -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginEnd="8dp">
+                    <TextView
+                        android:id="@+id/tvStatusFilter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:background="@drawable/bg_spinner"
+                        android:text="Все статусы"
+                        android:drawableEnd="@drawable/ic_dropdown"
+                        android:clickable="true"
+                        android:focusable="true" />
+                    <ImageView
+                        android:id="@+id/btnClearStatus"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_close"
+                        android:padding="4dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Город -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginEnd="8dp">
+                    <TextView
+                        android:id="@+id/tvCityFilter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:background="@drawable/bg_spinner"
+                        android:text="Все города"
+                        android:drawableEnd="@drawable/ic_dropdown"
+                        android:clickable="true"
+                        android:focusable="true" />
+                    <ImageView
+                        android:id="@+id/btnClearCity"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_close"
+                        android:padding="4dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Дата размещения и окончания -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginEnd="4dp">
+                <TextView
+                    android:id="@+id/tvDateFrom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_spinner"
+                    android:text="Дата от"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tvDateTo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_spinner"
+                    android:text="Дата до"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp" />
+                <ImageView
+                    android:id="@+id/btnClearDate"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_close"
+                    android:padding="4dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginStart="4dp">
+                <TextView
+                    android:id="@+id/tvEndDateFrom"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_spinner"
+                    android:text="Окончание от"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tvEndDateTo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_spinner"
+                    android:text="Окончание до"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp" />
+                <ImageView
+                    android:id="@+id/btnClearEndDate"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_close"
+                    android:padding="4dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Кнопка добавления -->
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ Добавить рекламу"
+            android:layout_marginTop="8dp"
+            style="@style/ButtonPrimary" />
+    </LinearLayout>
+
+    <!-- Таблица -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- Шапка -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@color/gray_light"
+                    android:padding="8dp"
+                    android:gravity="center_vertical"
+                    android:minHeight="40dp">
+
+                    <TextView
+                        android:id="@+id/tvHeaderStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Статус"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderAdvertiser"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Рекламодатель"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Тип"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderInterval"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Интервал"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderCities"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Города"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderPeriod"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="  Период  "
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderStart"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Начало"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderEnd"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Окончание"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:padding="4dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Нет рекламных объявлений"
+        android:textSize="16sp"
+        android:visibility="gone"
+        android:layout_marginTop="16dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+</LinearLayout>

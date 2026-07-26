@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Дата от:"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary" />
+
+    <TextView
+        android:id="@+id/tvStartDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_spinner"
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:textColor="@color/text_primary"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Дата до:"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary" />
+
+    <TextView
+        android:id="@+id/tvEndDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_spinner"
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:textColor="@color/text_primary"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>
+

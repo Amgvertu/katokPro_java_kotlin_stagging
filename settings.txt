@@ -1,0 +1,444 @@
+========= app/build.gradle =======
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
+    id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
+    alias(libs.plugins.agcp)
+}
+
+android {
+    namespace 'com.katok.pro'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.katok.pro"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+        resConfigs "ru", "en"
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOG_ENABLED", "false"
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
+            buildConfigField "boolean", "LOG_ENABLED", "true"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    //Huawei
+    implementation libs.agconnect.appmessaging
+
+    // Kotlin
+    implementation libs.kotlin.stdlib
+    implementation libs.bundles.coroutines
+
+    // AndroidX Core
+    implementation libs.core.ktx
+    implementation libs.appcompat
+
+    // UI
+    implementation libs.bundles.androidx.ui
+
+    // Architecture
+    implementation libs.bundles.androidx.arch
+    implementation libs.bundles.navigation
+
+    // Network
+    implementation libs.bundles.retrofit
+
+    // Room
+    implementation libs.bundles.room
+    implementation libs.play.services.maps3d
+    ksp libs.room.compiler
+
+    // Hilt
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
+
+    // Coil (замена Glide)
+    implementation libs.coil
+
+    // Security
+    implementation libs.security.crypto
+
+    // Firebase
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.messaging
+    implementation libs.firebase.analytics
+
+    // Testing
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.espresso.core
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.16.0"
+
+    // RxJava
+    implementation libs.rxjava
+    implementation libs.rxandroid
+
+    // STOMP WebSocket
+    implementation libs.stomp
+    implementation libs.java.websocket
+
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    // DataStore
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+
+    //WorkManager
+    implementation "androidx.work:work-runtime-ktx:2.10.0"
+
+    //Paging 3
+    implementation "androidx.paging:paging-runtime-ktx:3.3.6"
+
+}
+
+========= app/src/debug/AndroidManifest.xml =======
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config_debug"
+        tools:replace="android:networkSecurityConfig" />
+</manifest>
+
+
+========= app/src/main/AndroidManifest.xml =======
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <application
+        android:name=".KatokApplication"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Katok">
+
+
+        <!--<meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />-->
+
+        <service
+            android:name=".services.WebSocketForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".services.KatokFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true"
+            android:theme="@style/Theme.Katok"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+    </application>
+
+
+</manifest>
+
+
+========= build.gradle =======
+plugins {
+    id 'com.android.application' version '8.8.0' apply false
+    id 'com.android.library' version '8.8.0' apply false
+    id 'org.jetbrains.kotlin.android' version '2.2.10' apply false
+    id 'com.google.devtools.ksp' version '2.2.10-2.0.2' apply false
+    id 'com.google.dagger.hilt.android' version '2.56.1' apply false
+    id 'com.google.gms.google-services' version '4.4.2' apply false
+    alias(libs.plugins.agcp) apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+========= gradle.properties =======
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+android.enableJetifier=true
+android.nonTransitiveRClass=false
+android.enableBuildCache=false
+org.gradle.parallel=false
+org.gradle.daemon=false
+android.defaults.buildfeatures.resvalues=true
+android.sdk.defaultTargetSdkToCompileSdkIfUnset=false
+android.enableAppCompileTimeRClass=false
+android.usesSdkInManifest.disallowed=false
+android.uniquePackageNames=false
+android.dependency.useConstraints=true
+android.r8.strictFullModeForKeepRules=false
+android.r8.optimizedResourceShrinking=false
+android.builtInKotlin=false
+android.newDsl=false
+
+
+========= gradle/libs.versions.toml =======
+[versions]
+kotlin = "2.2.10"
+agp = "8.8.0"
+hilt = "2.56.1"
+room = "2.7.2"
+ksp = "2.2.10-2.0.2"
+retrofit = "2.12.0"
+okhttp = "4.12.0"
+coroutines = "1.10.2"
+navigation = "2.9.0"
+paging = "3.3.6"
+lifecycle = "2.9.0"
+activity = "1.10.1"
+fragment = "1.8.6"
+appcompat = "1.7.0"
+material3 = "1.13.0"
+coordinatorlayout = "1.3.0"
+swiperefresh = "1.2.0"
+recyclerview = "1.4.0"
+constraintlayout = "2.2.1"
+viewpager2 = "1.1.0"
+preference = "1.2.1"
+core-ktx = "1.16.0"
+collection-ktx = "1.5.0"
+security = "1.1.0-alpha06"
+coil = "2.7.0"
+firebase-bom = "34.11.0"
+gms = "21.3.0"
+play-services-location = "21.3.0"
+junit = "4.13.2"
+androidx-junit = "1.2.1"
+espresso = "3.6.1"
+ktlint = "12.2.0"
+detekt = "1.23.8"
+rxjava = "2.2.21"
+rxandroid = "2.1.1"
+stomp = "1.6.6"
+java-websocket = "1.5.4"
+play-services-maps3d = "0.2.0"
+agcVersion = "1.9.6.300"
+
+[libraries]
+rxjava = { group = "io.reactivex.rxjava2", name = "rxjava", version.ref = "rxjava" }
+rxandroid = { group = "io.reactivex.rxjava2", name = "rxandroid", version.ref = "rxandroid" }
+stomp = { group = "com.github.NaikSoftware", name = "StompProtocolAndroid", version.ref = "stomp" }
+java-websocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "java-websocket" }
+
+
+# Kotlin
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
+
+# AndroidX
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+collection-ktx = { group = "androidx.collection", name = "collection-ktx", version.ref = "collection-ktx" }
+activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
+fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+
+# UI
+material = { group = "com.google.android.material", name = "material", version.ref = "material3" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
+viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
+
+# Architecture
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+lifecycle-common-java8 = { group = "androidx.lifecycle", name = "lifecycle-common-java8", version.ref = "lifecycle" }
+lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycle" }
+
+# Navigation
+navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+navigation-dynamic-features-fragment = { group = "androidx.navigation", name = "navigation-dynamic-features-fragment", version.ref = "navigation" }
+
+# Paging
+paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
+paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging" }
+
+# DI
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+# Room
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+
+# Network
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+
+# Security
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security" }
+
+# Image Loading
+coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+
+# Location
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location" }
+
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+
+#Huawei
+agconnect-appmessaging = {module = "com.huawei.agconnect:agconnect-appmessaging", version.ref = "agcVersion"}
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+
+# Gradle Plugins (for classpath)
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+hilt-gradlePlugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+play-services-maps3d = { group = "com.google.android.gms", name = "play-services-maps3d", version.ref = "play-services-maps3d" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+agcp = {id = "com.huawei.agconnect.agcp", version.ref = "agcVersion"}
+
+[bundles]
+androidx-ui = [
+    "appcompat",
+    "material",
+    "constraintlayout",
+    "recyclerview",
+    "swiperefreshlayout",
+    "viewpager2",
+    "coordinatorlayout"
+]
+androidx-arch = [
+    "lifecycle-viewmodel-ktx",
+    "lifecycle-livedata-ktx",
+    "lifecycle-runtime-ktx",
+    "lifecycle-common-java8",
+    "lifecycle-service"
+]
+navigation = ["navigation-fragment-ktx", "navigation-ui-ktx"]
+coroutines = ["coroutines-android", "coroutines-core", "coroutines-play-services"]
+retrofit = ["retrofit", "retrofit-converter-gson", "okhttp", "okhttp-logging"]
+room = ["room-runtime", "room-ktx", "room-paging"]
+paging = ["paging-runtime", "paging-common"]
+
+========= gradle/wrapper/gradle-wrapper.properties =======
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-9.3.1-bin.zip
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+
+
+========= local.properties =======
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the SDK. This is only used by Gradle.
+# For customization when using a Version Control System, please read the
+# header note.
+#Tue Jun 23 23:54:41 NOVT 2026
+sdk.dir=C\:\\Users\\prora\\AppData\\Local\\Android\\Sdk
+
+========= settings.gradle =======
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url 'https://developer.huawei.com/repo/' }
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://developer.huawei.com/repo/' }
+    }
+}
+
+rootProject.name = "KatokPro"
+include ':app'
+
+

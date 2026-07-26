@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Katok" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/accent</item>
+        <item name="colorOnSecondary">@android:color/black</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowBackground">@color/background</item>
+
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+
+        <item name="editTextStyle">@style/Widget.Katok.EditText</item>
+        <item name="spinnerStyle">@style/Widget.Katok.Spinner</item>
+    </style>
+
+    <style name="Widget.Katok.EditText" parent="Widget.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Katok.TextInputEditText</item>
+    </style>
+
+    <style name="Widget.Katok.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:background">@drawable/bg_spinner</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <style name="ThemeOverlay.Katok.TextInputEditText" parent="">
+        <item name="colorControlNormal">@color/gray_medium</item>
+        <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent</item>
+    </style>
+
+    <style name="ButtonOutline" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/button_outline</item>
+        <item name="android:textColor">@color/accent</item>   <!-- акцентный цвет на тёмном фоне -->
+        <item name="android:paddingVertical">8dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="cornerRadius">40dp</item>
+        <item name="strokeColor">@color/accent</item>
+        <item name="strokeWidth">1.5dp</item>
+    </style>
+
+</resources>
+

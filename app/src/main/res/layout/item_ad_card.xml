@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:paddingBottom="4dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/white">
+
+    <!-- Горизонтальный контейнер для цветной полосы и контента -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Цветная полоса слева -->
+        <View
+            android:id="@+id/view_strip"
+            android:layout_width="6dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+
+        <!-- Основной контент карточки -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Верхняя часть: тег и бейдж -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:id="@+id/tv_tag"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="end">
+
+                    <LinearLayout
+                        android:id="@+id/ll_badges"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Название ЛДС -->
+            <TextView
+                android:id="@+id/tv_rink"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="2dp" />
+
+            <!-- Адрес ЛДС -->
+            <TextView
+                android:id="@+id/tv_rink_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- Дата и время -->
+            <TextView
+                android:id="@+id/tv_datetime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp" />
+
+            <!-- Уровень -->
+            <TextView
+                android:id="@+id/tv_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:background="@drawable/bg_tag"
+                android:textSize="11sp"
+                android:textColor="#000000"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Доставка -->
+            <TextView
+                android:id="@+id/tv_delivery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:visibility="gone" />
+
+            <!-- Оплата -->
+            <TextView
+                android:id="@+id/tv_payment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:visibility="gone" />
+
+            <!-- Количество игроков (блок) -->
+            <LinearLayout
+                android:id="@+id/layout_players_needed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_goalies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_defenders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_forwards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Автор и команда -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:id="@+id/tv_author"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="@color/primary"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/tv_team"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Телефон -->
+            <TextView
+                android:id="@+id/tv_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- Разделитель -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_border"
+                android:layout_marginHorizontal="12dp" />
+
+            <!-- Блок откликнувшихся -->
+            <TextView
+                android:id="@+id/tvResponsesHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Откликнулись"
+                android:paddingStart="10sp"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:paddingBottom="10dp"
+                android:paddingEnd="10dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvResponses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="15sp"
+                android:nestedScrollingEnabled="false"
+                android:background="@null"
+                android:padding="4dp"
+                android:visibility="gone" />
+
+            <!-- Разделитель перед кнопками -->
+            <View
+                android:id="@+id/divider_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_border"
+                android:layout_marginHorizontal="12dp"
+                android:visibility="gone" />
+
+            <!-- Кнопки управления -->
+            <LinearLayout
+                android:id="@+id/ll_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone"
+                android:background="@color/white">
+
+                <Button
+                    android:id="@+id/btn_respond"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✉️ Откликнуться"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/primary"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_response_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Вы откликнулись...   "
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_cancel_response"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🗑️ Отменить"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/error"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_archive"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📦 В архив"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_edit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✏️ Редактировать"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/primary"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_delete"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🗑️ Удалить"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/error"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:layout_marginStart="4dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Кнопки подтверждения/отклонения (для ожидающих откликов) -->
+            <LinearLayout
+                android:id="@+id/ll_response_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btn_confirm_response"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✓ Подтвердить"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/success"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btn_reject_response"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✗ Отклонить"
+                    android:background="@drawable/btn_outline"
+                    android:textColor="@color/error"
+                    android:textSize="8sp"
+                    android:padding="4dp"
+                    android:layout_marginStart="4dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout> <!-- конец основного контента -->
+    </LinearLayout> <!-- конец горизонтального контейнера с полосой -->
+</androidx.cardview.widget.CardView>
+

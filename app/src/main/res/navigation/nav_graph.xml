@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_main">
+
+    <fragment
+        android:id="@+id/navigation_main"
+        android:name="com.katok.pro.ui.MainFragment"
+        android:label="Ледовые объявления"
+        tools:layout="@layout/fragment_main" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.katok.pro.ui.LoginFragment"
+        android:label="Вход"
+        tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.katok.pro.ui.RegisterFragment"
+        android:label="Регистрация"
+        tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.katok.pro.ui.ForgotPasswordFragment"
+        android:label="Восстановление пароля"
+        tools:layout="@layout/fragment_forgot_password" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.katok.pro.ui.ProfileFragment"
+        android:label="Профиль"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/navigation_create"
+        android:name="com.katok.pro.ui.CreateAdFragment"
+        android:label="Создание объявления"
+        tools:layout="@layout/fragment_create_ad">
+        <argument
+            android:name="adId"
+            app:argType="string"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_my_ads"
+        android:name="com.katok.pro.ui.MyAdsFragment"
+        android:label="Мои объявления"
+        tools:layout="@layout/fragment_my_ads" />
+
+    <fragment
+        android:id="@+id/navigation_responses"
+        android:name="com.katok.pro.ui.ResponsesFragment"
+        android:label="Мои отклики"
+        tools:layout="@layout/fragment_responses" />
+
+    <fragment
+        android:id="@+id/viewProfileFragment"
+        android:name="com.katok.pro.ui.ViewProfileFragment"
+        android:label="Профиль пользователя"
+        tools:layout="@layout/fragment_view_profile" />
+
+    <fragment
+        android:id="@+id/adminFragment"
+        android:name="com.katok.pro.ui.AdminFragment"
+        android:label="Админка"
+        tools:layout="@layout/fragment_admin" />
+
+    <fragment
+        android:id="@+id/feedbackFragment"
+        android:name="com.katok.pro.ui.FeedbackFragment"
+        android:label="Обратная связь"
+        tools:layout="@layout/fragment_feedback" />
+
+    <fragment
+        android:id="@+id/messagesFragment"
+        android:name="com.katok.pro.ui.MessagesFragment"
+        android:label="Уведомления"
+        tools:layout="@layout/fragment_messages" />
+
+    <fragment
+        android:id="@+id/adminAdDetailFragment"
+        android:name="com.katok.pro.ui.AdminAdDetailFragment"
+        android:label="Детали объявления"
+        tools:layout="@layout/fragment_admin_ad_detail" />
+
+    <fragment
+        android:id="@+id/adminUserDetailFragment"
+        android:name="com.katok.pro.ui.AdminUserDetailFragment"
+        android:label="Детали пользователя"
+        tools:layout="@layout/fragment_admin_user_detail" />
+
+    <!-- В AdminUsersFragment (или в навигации) добавьте действие: -->
+    <action
+        android:id="@+id/action_adminUsersFragment_to_adminUserDetailFragment"
+        app:destination="@id/adminUserDetailFragment" />
+
+    <fragment
+        android:id="@+id/createAdvertisingFragment"
+        android:name="com.katok.pro.ui.CreateAdvertisingFragment"
+        android:label="Создание рекламы"
+        tools:layout="@layout/fragment_create_advertising" />
+
+</navigation>
+

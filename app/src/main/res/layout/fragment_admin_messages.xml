@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ===== Блок "Тип сообщения" ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Тип сообщения"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgMessageType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Текстовое"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbGraphic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Графическое" />
+        </RadioGroup>
+
+        <!-- ===== Поля для текстового сообщения ===== -->
+        <LinearLayout
+            android:id="@+id/layoutTextFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Заголовок (необязательно)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="false"
+                    android:maxLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Тело сообщения *">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- ===== Поля для графического сообщения ===== -->
+        <LinearLayout
+            android:id="@+id/layoutGraphicFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnPickImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Выбрать изображение *" />
+
+            <LinearLayout
+                android:id="@+id/layoutImagePreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:id="@+id/ivPreview"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/gray_light" />
+
+                <Button
+                    android:id="@+id/btnRemoveImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Удалить"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ссылка (необязательно)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etLink"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- ===== Блок "Выбор адресата" ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Выбор адресата"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerRecipientType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/recipient_types" />
+
+        <!-- ===== Блок массового адресата ===== -->
+        <LinearLayout
+            android:id="@+id/layoutMassRecipients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <CheckBox
+                android:id="@+id/chkUsers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Пользователям" />
+
+            <CheckBox
+                android:id="@+id/chkAdmins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Админам" />
+
+            <CheckBox
+                android:id="@+id/chkModerators"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Модераторам" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="По городам (мультивыбор)"
+                android:layout_marginTop="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectCities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать города"
+                style="@style/ButtonOutline" />
+
+            <TextView
+                android:id="@+id/tvSelectedCities"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Города не выбраны"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="По командам (мультивыбор)"
+                android:layout_marginTop="8dp" />
+
+            <Button
+                android:id="@+id/btnSelectTeams"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбрать команды"
+                style="@style/ButtonOutline" />
+
+            <TextView
+                android:id="@+id/tvSelectedTeams"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Команды не выбраны"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+        </LinearLayout>
+
+        <!-- ===== Блок индивидуального адресата ===== -->
+        <LinearLayout
+            android:id="@+id/layoutIndividualRecipients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Поиск пользователя (ID, телефон, имя, фамилия)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearchUser"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFoundUsers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxHeight="200dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvSelectedUsersCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Выбрано: 0"
+                android:layout_marginTop="8dp"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary" />
+        </LinearLayout>
+
+        <!-- ===== Блок "Форма доставки" ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Форма доставки"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgDeliveryType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbSilent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Тихое"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbPush"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="С push-уведомлением" />
+        </RadioGroup>
+
+        <!-- ===== Кнопка отправки ===== -->
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Отправить"
+            android:layout_marginTop="16dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

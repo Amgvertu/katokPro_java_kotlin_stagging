@@ -1,0 +1,59 @@
+# Файлы сборки Gradle
+.gradle/
+build/
+/*/build/
+/*/*/build/
+
+# IDEA / Android Studio
+.idea/
+*.iml
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+.idea/modules.xml
+.idea/vcs.xml
+
+# Файлы локальной конфигурации
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Файлы логов
+*.log
+
+# Отчёты о тестах
+/test-output/
+
+# Сгенерированные файлы
+/captures/
+/navigation/
+*.apk
+*.aab
+*.dex
+*.class
+
+#Ключи
+app/agvonnect-sevices.json
+app/google-services.json
+
+# Файлы конкретных инструментов
+.externalNativeBuild/
+cmake-build-debug/
+cmake-build-release/
+
+# Файлы модулей
+/.navigation/
+*.hprof
+
+# Временные файлы Kotlin
+.kotlin/

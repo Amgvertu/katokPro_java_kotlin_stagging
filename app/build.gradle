@@ -1,0 +1,124 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
+    id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
+    alias(libs.plugins.agcp)
+}
+
+android {
+    namespace 'com.katok.pro'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.katok.pro"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+        resConfigs "ru", "en"
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOG_ENABLED", "false"
+        }
+        debug {
+            minifyEnabled false
+            debuggable true
+            buildConfigField "boolean", "LOG_ENABLED", "true"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    //Huawei
+    implementation libs.agconnect.appmessaging
+
+    // Kotlin
+    implementation libs.kotlin.stdlib
+    implementation libs.bundles.coroutines
+
+    // AndroidX Core
+    implementation libs.core.ktx
+    implementation libs.appcompat
+
+    // UI
+    implementation libs.bundles.androidx.ui
+
+    // Architecture
+    implementation libs.bundles.androidx.arch
+    implementation libs.bundles.navigation
+
+    // Network
+    implementation libs.bundles.retrofit
+
+    // Room
+    implementation libs.bundles.room
+    implementation libs.play.services.maps3d
+    ksp libs.room.compiler
+
+    // Hilt
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
+
+    // Coil (замена Glide)
+    implementation libs.coil
+
+    // Security
+    implementation libs.security.crypto
+
+    // Firebase
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.messaging
+    implementation libs.firebase.analytics
+
+    // Testing
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.espresso.core
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.16.0"
+
+    // RxJava
+    implementation libs.rxjava
+    implementation libs.rxandroid
+
+    // STOMP WebSocket
+    implementation libs.stomp
+    implementation libs.java.websocket
+
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    // DataStore
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+
+    //WorkManager
+    implementation "androidx.work:work-runtime-ktx:2.10.0"
+
+    //Paging 3
+    implementation "androidx.paging:paging-runtime-ktx:3.3.6"
+
+}

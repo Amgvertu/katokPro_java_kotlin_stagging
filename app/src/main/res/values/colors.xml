@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="primary">#1a2b3c</color>
+    <color name="primary_dark">#0f1c2a</color>
+    <color name="accent">#ffb347</color>
+    <color name="background">#eef2f5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#1e2b3a</color>
+    <color name="text_secondary">#4f5f6f</color>
+    <color name="error">#b91c1c</color>
+    <color name="success">#166534</color>
+
+    <color name="gray_bg">#F5F5F5</color>
+    <color name="gray_light">#E0E0E0</color>
+    <color name="gray_medium">#9E9E9E</color>
+    <color name="gray_dark">#616161</color>
+    <color name="gray_text">#757575</color>
+    <color name="gray_border">#E0E0E0</color>
+
+    <color name="bottom_nav_color">#002137</color>
+    <color name="bottom_nav_inactive">#9E9E9E</color>
+    <color name="warning">#FFB74D</color>  <!-- ярко-оранжевый -->
+    <color name="warning_text">#000000</color>
+
+    <color name="text_hint">#9E9E9E</color>
+</resources>
+

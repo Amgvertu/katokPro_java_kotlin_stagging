@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Исключаем SharedPreferences с токенами и сессией -->
+<!--    <exclude domain="sharedpref" path="KatokPref.xml"/>
+    <exclude domain="sharedpref" path="fcm_token_pref.xml"/>-->
+
+    <!-- Остальные данные можно сохранять -->
+    <include domain="database" path="."/>
+</full-backup-content>
+

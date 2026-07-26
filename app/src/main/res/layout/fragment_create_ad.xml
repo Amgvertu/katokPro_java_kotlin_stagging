@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Создание объявления"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Категория объявления -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary">
+
+            <Spinner
+                android:id="@+id/spinnerCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_spinner"
+                android:padding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Тип объявления (скрыт по умолчанию) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutTypeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary">
+
+            <Spinner
+                android:id="@+id/spinnerType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_spinner"
+                android:padding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Город -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_dropdown"
+            app:endIconTint="@color/text_secondary">
+
+            <EditText
+                android:id="@+id/etCity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Город"
+                android:inputType="text"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:clickable="true"
+                android:textColor="@color/text_primary" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ЛДС -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutRinkGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_dropdown"
+            app:endIconTint="@color/text_secondary">
+
+            <EditText
+                android:id="@+id/etRink"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ЛДС"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:textColor="@color/text_primary" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Список выбранных ЛДС (скрыт по умолчанию) -->
+        <LinearLayout
+            android:id="@+id/layoutSelectedRinks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Выбранные ЛДС:"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="4dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSelectedRinks"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scrollbars="vertical"
+                android:background="@drawable/bg_spinner"
+                android:padding="12dp"
+                android:nestedScrollingEnabled="true" />
+
+        </LinearLayout>
+
+        <!-- Дата -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_calendar"
+            app:endIconTint="@color/text_secondary">
+
+            <EditText
+                android:id="@+id/etDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Дата"
+                android:inputType="date"
+                android:focusable="false"
+                android:clickable="true"
+                android:textColor="@color/text_primary" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Блок времени -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <CheckBox
+                android:id="@+id/cbAnyTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Любое время"
+                android:visibility="gone"
+                android:textColor="@color/text_primary" />
+
+            <!-- Время (одиночное) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutTimeSingle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/accent"
+                app:hintTextColor="@color/text_secondary">
+
+                <EditText
+                    android:id="@+id/etTimeStart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Время"
+                    android:inputType="time"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:textColor="@color/text_primary" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Время (диапазон) -->
+            <LinearLayout
+                android:id="@+id/layoutTimeRange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/accent"
+                    app:hintTextColor="@color/text_secondary">
+
+                    <EditText
+                        android:id="@+id/etTimeFrom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="С"
+                        android:inputType="time"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:textColor="@color/text_primary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/accent"
+                    app:hintTextColor="@color/text_secondary">
+
+                    <EditText
+                        android:id="@+id/etTimeTo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="До"
+                        android:inputType="time"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:textColor="@color/text_primary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Уровень (скрыт по умолчанию) -->
+        <LinearLayout
+            android:id="@+id/layoutLevelGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@drawable/bg_spinner"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Уровень"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp" />
+
+            <HorizontalScrollView
+                android:id="@+id/layoutLevelMulti"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <CheckBox
+                        android:id="@+id/cbLevelA"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="A" />
+                    <CheckBox
+                        android:id="@+id/cbLevelB"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="B" />
+                    <CheckBox
+                        android:id="@+id/cbLevelC"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="C" />
+                    <CheckBox
+                        android:id="@+id/cbLevelD"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="D" />
+                    <CheckBox
+                        android:id="@+id/cbLevelE"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="E" />
+                    <CheckBox
+                        android:id="@+id/cbLevelF"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="F" />
+                    <CheckBox
+                        android:id="@+id/cbLevelG"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G" />
+                    <CheckBox
+                        android:id="@+id/cbLevelH"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="H" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- Команда (скрыта по умолчанию) -->
+        <LinearLayout
+            android:id="@+id/layoutTeamGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxStrokeColor="@color/accent"
+                app:hintTextColor="@color/text_secondary">
+
+                <EditText
+                    android:id="@+id/etTeam"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Команда"
+                    android:textColor="@color/text_primary" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <CheckBox
+                android:id="@+id/cbShowTeam"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Показывать"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <!-- Количество игроков (скрыто по умолчанию) -->
+        <LinearLayout
+            android:id="@+id/layoutPlayersGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+
+            <!-- Для вратаря -->
+            <LinearLayout
+                android:id="@+id/layoutGoalieCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Количество вратарей: "
+                    android:textColor="@color/text_secondary" />
+
+                <Spinner
+                    android:id="@+id/spinnerGoalieCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/goalie_count_options"
+                    android:background="@drawable/bg_spinner" />
+
+            </LinearLayout>
+
+            <!-- Для полевых -->
+            <LinearLayout
+                android:id="@+id/layoutFieldPlayers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/accent"
+                    app:hintTextColor="@color/text_secondary">
+
+                    <EditText
+                        android:id="@+id/etDefenders"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Защитники"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/accent"
+                    app:hintTextColor="@color/text_secondary">
+
+                    <EditText
+                        android:id="@+id/etForwards"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Нападающие"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvTotalPlayers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Требуется игроков: 0"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/accent" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Доставка (скрыта по умолчанию) -->
+        <LinearLayout
+            android:id="@+id/layoutDeliveryGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+
+            <CheckBox
+                android:id="@+id/cbDelivery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Нужна доставка"
+                android:textColor="@color/text_primary" />
+
+        </LinearLayout>
+
+        <!-- Оплата -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/accent"
+            app:hintTextColor="@color/text_secondary">
+
+            <EditText
+                android:id="@+id/etPayment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Оплата"
+                android:inputType="text"
+                android:textColor="@color/text_primary" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Контактное имя (только для чтения) -->
+        <TextView
+            android:id="@+id/tvContactName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Контактное имя: "
+            android:padding="12dp"
+            android:background="@drawable/bg_white"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/text_primary" />
+
+        <!-- Контактный телефон (только для чтения) -->
+        <TextView
+            android:id="@+id/tvContactPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Контактный телефон: "
+            android:padding="12dp"
+            android:background="@drawable/bg_white"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/text_primary" />
+
+        <!-- Кнопки -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSubmit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Сохранить"
+                style="@style/ButtonPrimary"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Отмена"
+                style="@style/ButtonOutline" />
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>

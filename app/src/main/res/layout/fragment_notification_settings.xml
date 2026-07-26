@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchResponseToMyAd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Уведомлять при отклике на моё объявление"
+            android:layout_marginBottom="15dp"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchMyResponseAccepted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Уведомлять при принятии моего отклика" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сохранить"
+            android:layout_marginBottom="24dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchNewAdsInCity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Уведомлять о новых объявлениях в домашнем городе" />
+
+        <!-- Блок подписок (видим, если включён switchNewAdsInCity) -->
+        <LinearLayout
+            android:id="@+id/layoutSubscriptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Подписки на типы объявлений"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSubscriptions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="100dp" />
+
+            <Button
+                android:id="@+id/btnAddSubscription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ Добавить подписку"
+                android:layout_marginTop="8dp"
+                style="@style/ButtonOutline" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>
+

@@ -1,0 +1,178 @@
+<resources>
+    <string name="app_name">Katok.pro</string>
+
+    <string-array name="goalie_count_options">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="level_options">
+        <item>A</item>
+        <item>B</item>
+        <item>C</item>
+        <item>D</item>
+        <item>E</item>
+        <item>F</item>
+        <item>G</item>
+        <item>H</item>
+    </string-array>
+
+    <string-array name="position_options">
+        <item>Вратарь</item>
+        <item>Защитник</item>
+        <item>Нападающий</item>
+        <item>Судья</item>
+        <item>Медик</item>
+        <item>Тренер</item>
+    </string-array>
+
+    <string-array name="sort_options">
+        <item>По дате (сначала новые)</item>
+        <item>По дате (сначала старые)</item>
+    </string-array>
+
+    <string-array name="ad_type_filter_options">
+        <item>Все типы</item>
+        <item>НУЖЕН ВРАТАРЬ</item>
+        <item>НУЖЕН ПОЛЕВОЙ</item>
+        <item>ИЩУ ЛЕД (ВРАТАРЬ)</item>
+        <item>ИЩУ ЛЕД (ПОЛЕВОЙ)</item>
+        <item>ИЩУ ТОВАРИЩЕСКИЙ МАТЧ</item>
+        <item>ПРЕДЛАГАЮ ТОВАРИЩЕСКИЙ МАТЧ</item>
+        <item>НУЖЕН СУДЬЯ</item>
+        <item>НУЖЕН ФОТОГРАФ</item>
+        <item>НУЖЕН МЕДИК</item>
+        <item>НУЖЕН ТРЕНЕР</item>
+    </string-array>
+
+    <string-array name="level_filter_options">
+        <item>Все уровни</item>
+        <item>A</item><item>B</item><item>C</item><item>D</item>
+        <item>E</item><item>F</item><item>G</item><item>H</item>
+    </string-array>
+
+    <string-array name="rink_filter_options">
+    </string-array>
+
+
+    <!-- Общие -->
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="error">Ошибка</string>
+    <string name="retry">Повторить</string>
+
+    <!-- Системные -->
+    <string name="session_reset">Сессия сброшена. Войдите заново.</string>
+    <string name="no_internet">Нет подключения к интернету</string>
+    <string name="server_not_connection">Нет соединения с сервером</string>
+    <string name="server_error">Ошибка сервера</string>
+    <string name="update_error">Ошибка обновления: </string>
+    <string name="exit_title">Выход</string>
+    <string name="exit_message">Вы уверены, что хотите выйти из приложения?</string>
+
+    <!-- Безопасность -->
+    <string name="access_denied">Доступ запрещен</string>
+
+    <!-- Авторизация и регистрация -->
+    <string name="login">Вход</string>
+    <string name="phone_hint">Телефон (+7XXXXXXXXXX или 8XXXXXXXXXX)</string>
+    <string name="password_hint">Пароль</string>
+    <string name="register">Зарегистрироваться</string>
+    <string name="already_have_account">Уже есть аккаунт? Войти</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="register_success">Регистрация успешна!</string>
+    <string name="city_choose">Выберите город</string>
+
+    <!-- Профиль -->
+    <string name="profile">Профиль</string>
+    <string name="logout">Выйти</string>
+    <string name="confirm_logout">Вы уверены, что хотите выйти?</string>
+    <string name="first_name">Имя</string>
+    <string name="last_name">Фамилия</string>
+    <string name="birth_date">Дата рождения</string>
+    <string name="position">Амплуа</string>
+    <string name="level">Уровень</string>
+    <string name="number">Номер</string>
+    <string name="team">Команда</string>
+    <string name="email">Email</string>
+    <string name="save">Сохранить</string>
+    <string name="avatar">Аватар</string>
+    <string name="choose_avatar">Выбрать новое фото</string>
+    <string name="delete_avatar">Удалить аватар</string>
+
+    <!-- Объявления -->
+    <string name="create_ad">Создать объявление</string>
+    <string name="edit_ad">Редактировать объявление</string>
+    <string name="delete_ad">Удалить объявление</string>
+    <string name="archive_ad">Архивировать</string>
+    <string name="respond">Откликнуться</string>
+    <string name="responses">Отклики</string>
+    <string name="my_ads">Мои объявления</string>
+    <string name="no_ads">Нет объявлений</string>
+    <string name="no_ads_filtered">Нет объявлений по выбранным фильтрам</string>
+
+    <!-- Фильтры -->
+    <string name="all_status">Все статусы</string>
+    <string name="on_moderation">На модерации</string>
+    <string name="actives">Активные</string>
+    <string name="filled">Набрано</string>
+    <string name="archives">Архивные</string>
+    <string name="defender">Защитник</string>
+    <string name="players_filled">" (набраны)"</string>
+    <string name="forward">Нападающий</string>
+    <string name="all_players_filled">Все места уже набраны</string>
+    <string name="to_response">Откликнуться</string>
+
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_bad_request">Неверный запрос. Проверьте введённые данные.</string>
+    <string name="error_unauthorized">Сессия истекла. Войдите заново.</string>
+    <string name="error_forbidden">Доступ запрещён.</string>
+    <string name="error_not_found">Запрашиваемые данные не найдены.</string>
+    <string name="error_server">Ошибка на сервере. Попробуйте позже.</string>
+    <string name="error_unknown">Ошибка %d</string>
+    <string name="error_unknown_general">Ошибка: %s</string>
+
+    <string-array name="recipient_types">
+        <item>Массовое</item>
+        <item>Индивидуальное</item>
+    </string-array>
+
+    <string name="all_cities">Все города</string>
+    <string name="all_teams">Все команды</string>
+    <string name="select_cities">Выберите города</string>
+    <string name="select_teams">Выберите команды</string>
+    <string name="selected_cities">Выбрано: %s</string>
+    <string name="selected_teams">Выбрано: %s</string>
+    <string name="no_cities_selected">Города не выбраны</string>
+    <string name="no_teams_selected">Команды не выбраны</string>
+
+
+    <!--Статистика-->
+    <string name="monitoring">Мониторинг</string>
+    <string name="users">Пользователи</string>
+    <string name="ads">Объявления</string>
+    <string name="total_users">Всего пользователей</string>
+    <string name="total_ads">Всего объявлений</string>
+    <string name="total_responses">Всего откликов</string>
+    <string name="total_accepted">Принятых откликов</string>
+    <string name="all_positions">Все амплуа</string>
+    <string name="all_statuses">Все статусы</string>
+    <string name="today">Сегодня</string>
+    <string name="month">Месяц</string>
+    <string name="year">Год</string>
+    <string name="date_from">Дата от</string>
+    <string name="date_to">Дата до</string>
+    <string name="clear_all">Сбросить все</string>
+
+    <string-array name="period_options">
+        <item>Сегодня</item>
+        <item>Месяц</item>
+        <item>Год</item>
+        <item>Всё время</item>
+    </string-array>
+
+
+</resources>
+
