@@ -29,11 +29,8 @@
         android:layout_height="wrap_content"
         android:background="?android:attr/windowBackground"
         app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color"
-        app:labelVisibilityMode="labeled"
-        app:itemActiveIndicatorColor="@color/accent"
-        app:itemActiveIndicatorHeight="3dp"
-        app:itemActiveIndicatorWidth="24dp" />
-</LinearLayout>
+        app:itemIconTint="@color/bottom_nav_color_selector"
+        app:itemTextColor="@color/bottom_nav_color_selector"
+        app:labelVisibilityMode="labeled" />
 
+</LinearLayout>
