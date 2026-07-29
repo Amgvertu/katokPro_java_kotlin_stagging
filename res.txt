@@ -13,8 +13,8 @@
 ========= app/src/main/res/color/bottom_nav_color_selector.xml =======
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/accent" android:state_checked="true" />
-    <item android:color="@color/gray_medium" android:state_checked="false" />
+    <item android:color="@color/primary_dark" android:state_checked="true" />
+    <item android:color="@color/un_active" android:state_checked="false" />
 </selector>
 
 
@@ -539,14 +539,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/windowBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:enabled="true"
         app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color" />
-</LinearLayout>
+        app:itemIconTint="@color/bottom_nav_color_selector"
+        app:itemTextColor="@color/bottom_nav_color_selector"
+        app:labelVisibilityMode="labeled" />
 
+</LinearLayout>
 
 ========= app/src/main/res/layout/dialog_add_subscription.xml =======
 <?xml version="1.0" encoding="utf-8"?>
@@ -8133,6 +8131,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="primary">#1a2b3c</color>
+    <color name="un_active">#4C5F83</color>
     <color name="primary_dark">#0f1c2a</color>
     <color name="accent">#ffb347</color>
     <color name="background">#eef2f5</color>
@@ -8160,7 +8159,7 @@
 
 ========= app/src/main/res/values/strings.xml =======
 <resources>
-    <string name="app_name">Katok.pro</string>
+    <string name="app_name">Katok.pro-staqing</string>
 
     <string-array name="goalie_count_options">
         <item>1</item>
@@ -8415,6 +8414,8 @@
         <item name="android:maxLines">1</item>
         <item name="android:singleLine">true</item>
     </style>
+
+
 
 
 
