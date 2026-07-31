@@ -585,6 +585,9 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
             when (result) {
                 is NetworkResult.Success -> {
                     ToastHelper.showSuccess(requireContext(), "Аватар удалён")
+                    // Мгновенно показываем стандартную иконку
+                    binding.ivAvatar.setImageResource(R.drawable.ic_default_avatar)
+                    // Загружаем обновлённый профиль с сервера
                     loadProfile()
                 }
                 is NetworkResult.Error -> {

@@ -157,14 +157,13 @@ class ProfileFragment : Fragment() {
         super.onResume()
         val savedPosition = profileViewModel.getTabPosition().value ?: 0
 
-        // Пересоздаём адаптер, чтобы полностью сбросить внутреннее состояние ViewPager2
-        setupViewPager()
-
-        // Устанавливаем сохранённую позицию и синхронизируем TabLayout
-        binding.viewPager.setCurrentItem(savedPosition, false)
+        // Просто переключаемся на сохранённую позицию, НЕ пересоздавая адаптер
+        if (binding.viewPager.currentItem != savedPosition) {
+            binding.viewPager.setCurrentItem(savedPosition, false)
+        }
         binding.tabLayout.getTabAt(savedPosition)?.select()
 
-        // Дополнительно обновляем ViewModel, чтобы позиция была актуальной
+        // Обновляем ViewModel, чтобы позиция была актуальной
         profileViewModel.setTabPosition(savedPosition)
     }
 }
