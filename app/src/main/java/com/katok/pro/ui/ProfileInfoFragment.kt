@@ -30,6 +30,7 @@ import com.katok.pro.network.ApiClient
 import com.katok.pro.repository.LocationRepository
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.util.Constants
+import com.katok.pro.util.ImageCompressor
 import com.katok.pro.util.PhoneUtils
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
@@ -514,19 +515,42 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
     private fun saveImageToTempFile(uri: Uri): File {
         val timeStamp = System.currentTimeMillis().toString()
         val tempFile = File(requireContext().cacheDir, "avatar_$timeStamp.jpg")
-        requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
-            FileOutputStream(tempFile).use { outputStream ->
-                val buffer = ByteArray(4096)
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
+
+        // Сразу сжимаем при сохранении
+        val compressedFile = ImageCompressor.compressImage(
+            contentResolver = requireContext().contentResolver,
+            uri = uri,
+            maxSizeBytes = 2 * 1024 * 1024,
+            maxWidth = 1024,
+            maxHeight = 1024
+        )
+
+        return if (compressedFile != null) {
+            // Если сжатие прошло успешно, используем сжатый файл
+            compressedFile
+        } else {
+            // Если сжатие не удалось, сохраняем как есть
+            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(tempFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
                 }
             }
+            tempFile
         }
-        return tempFile
     }
 
     private fun showUploadAvatarDialog() {
+        val file = selectedAvatarFile ?: return
+
+        // Проверяем размер перед показом диалога
+        val sizeMB = file.length() / (1024.0 * 1024.0)
+        if (sizeMB > 10) {
+            ToastHelper.showError(requireContext(), "Изображение слишком большое (${String.format("%.1f", sizeMB)} МБ). Пожалуйста, выберите другое.")
+            selectedAvatarFile = null
+            loadProfile()
+            return
+        }
+
         AlertDialog.Builder(requireContext())
             .setTitle("Загрузить аватар")
             .setMessage("Установить выбранное изображение как аватар?")
@@ -540,9 +564,24 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
 
     private fun uploadAvatar() {
         val file = selectedAvatarFile ?: return
+
+        // СЖАТИЕ ИЗОБРАЖЕНИЯ
+        val compressedFile = ImageCompressor.compressImage(
+            contentResolver = requireContext().contentResolver,
+            uri = Uri.fromFile(file),
+            maxSizeBytes = 2 * 1024 * 1024, // 2 МБ (сервер разрешает до 10 МБ)
+            maxWidth = 1024,
+            maxHeight = 1024
+        )
+
+        if (compressedFile == null) {
+            ToastHelper.showError(requireContext(), "Не удалось обработать изображение")
+            return
+        }
+
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = userRepository.uploadAvatar(file)
+            val result = userRepository.uploadAvatar(compressedFile)
             binding.progressBar.visibility = View.GONE
             when (result) {
                 is NetworkResult.Success -> {
@@ -559,6 +598,7 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
                     }
                     loadProfile()
                     selectedAvatarFile?.delete()
+                    compressedFile.delete() // удаляем временный сжатый файл
                 }
                 is NetworkResult.Error -> {
                     handleError(result)
