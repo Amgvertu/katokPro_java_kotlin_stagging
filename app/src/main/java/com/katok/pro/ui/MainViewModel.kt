@@ -564,11 +564,13 @@ class MainViewModel @Inject constructor(
             val ad = currentList[index]
             val newResponses = ad.responses?.filterNot { it.id == responseId }
             val updatedAd = ad.copy(responses = newResponses)
-            // Пересчитываем счётчики
             val adWithCounts = AdUtils.recalculateAcceptedCounts(updatedAd)
             val recalculatedAd = AdUtils.recalculateAdStatus(adWithCounts)
             currentList[index] = recalculatedAd
             _ads.value = currentList
+            // 👇 ДОБАВЛЯЕМ ЭТИ ДВЕ СТРОКИ
+            loadRinksForAds(currentList)
+            mergeItems()
         }
     }
 

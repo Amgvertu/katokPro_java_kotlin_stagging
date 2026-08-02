@@ -360,10 +360,16 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
                     currentUserId = sessionManager.getUserId()
                 }
                 is NetworkResult.Error -> {
+                    // Если есть кэш, не показываем ошибку, чтобы не беспокоить пользователя
                     if (cachedProfile == null) {
                         handleError(result)
+                    } else {
+                        // Если кэш есть, но сервер вернул ошибку, просто игнорируем её,
+                        // потому что пользователь уже видит данные из кэша.
+                        ToastHelper.showError(requireContext(), "Не удалось обновить данные с сервера")
                     }
                 }
+
                 else -> {}
             }
         }
@@ -513,30 +519,28 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
     }
 
     private fun saveImageToTempFile(uri: Uri): File {
-        val timeStamp = System.currentTimeMillis().toString()
-        val tempFile = File(requireContext().cacheDir, "avatar_$timeStamp.jpg")
-
-        // Сразу сжимаем при сохранении
+        // Используем компрессор, он сам создаёт временный файл
         val compressedFile = ImageCompressor.compressImage(
             contentResolver = requireContext().contentResolver,
             uri = uri,
-            maxSizeBytes = 2 * 1024 * 1024,
+            maxSizeBytes = 2 * 1024 * 1024, // 2 МБ
             maxWidth = 1024,
             maxHeight = 1024
         )
 
-        return if (compressedFile != null) {
-            // Если сжатие прошло успешно, используем сжатый файл
-            compressedFile
-        } else {
-            // Если сжатие не удалось, сохраняем как есть
+        // Если сжатие не удалось, сохраняем как есть
+        if (compressedFile == null) {
+            ToastHelper.showError(requireContext(), "Не удалось обработать изображение")
+            val fallbackFile = File(requireContext().cacheDir, "avatar_${System.currentTimeMillis()}.jpg")
             requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(tempFile).use { outputStream ->
+                FileOutputStream(fallbackFile).use { outputStream ->
                     inputStream.copyTo(outputStream)
                 }
             }
-            tempFile
+            return fallbackFile
         }
+
+        return compressedFile
     }
 
     private fun showUploadAvatarDialog() {
@@ -565,23 +569,15 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
     private fun uploadAvatar() {
         val file = selectedAvatarFile ?: return
 
-        // СЖАТИЕ ИЗОБРАЖЕНИЯ
-        val compressedFile = ImageCompressor.compressImage(
-            contentResolver = requireContext().contentResolver,
-            uri = Uri.fromFile(file),
-            maxSizeBytes = 2 * 1024 * 1024, // 2 МБ (сервер разрешает до 10 МБ)
-            maxWidth = 1024,
-            maxHeight = 1024
-        )
-
-        if (compressedFile == null) {
-            ToastHelper.showError(requireContext(), "Не удалось обработать изображение")
+        // Проверяем размер перед загрузкой (на всякий случай)
+        if (file.length() > 10 * 1024 * 1024) {
+            ToastHelper.showError(requireContext(), "Изображение слишком большое. Пожалуйста, выберите другое.")
             return
         }
 
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = userRepository.uploadAvatar(compressedFile)
+            val result = userRepository.uploadAvatar(file)
             binding.progressBar.visibility = View.GONE
             when (result) {
                 is NetworkResult.Success -> {
@@ -598,7 +594,6 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
                     }
                     loadProfile()
                     selectedAvatarFile?.delete()
-                    compressedFile.delete() // удаляем временный сжатый файл
                 }
                 is NetworkResult.Error -> {
                     handleError(result)
@@ -625,13 +620,16 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
             when (result) {
                 is NetworkResult.Success -> {
                     ToastHelper.showSuccess(requireContext(), "Аватар удалён")
-                    // Мгновенно показываем стандартную иконку
+                    // Очищаем кэш Glide и показываем стандартную иконку
+                    Glide.with(this@ProfileInfoFragment).clear(binding.ivAvatar)
                     binding.ivAvatar.setImageResource(R.drawable.ic_default_avatar)
-                    // Загружаем обновлённый профиль с сервера
-                    loadProfile()
+                    // Обновляем локальный кэш профиля
+                    val cachedProfile = userRepository.getCachedProfile()
+                    cachedProfile?.avatarUrl = null
+                    cachedProfile?.let { userRepository.cacheProfile(it) }
                 }
                 is NetworkResult.Error -> {
-                    handleError(result)
+                    ToastHelper.showError(requireContext(), "Не удалось удалить аватар: ${result.message}")
                 }
                 else -> {}
             }

@@ -63,8 +63,8 @@ class UserRepository(context: Context) {
         return safeApiCall { apiService.uploadAvatar(body) }
     }
 
-    suspend fun deleteAvatar(): NetworkResult<Void> {
-        return safeApiCall { apiService.deleteAvatar() }
+    suspend fun deleteAvatar(): NetworkResult<Unit> {
+        return safeApiCallIgnoreNullData { apiService.deleteAvatar() }
     }
 
     suspend fun updateFcmToken(token: String): NetworkResult<Void> {

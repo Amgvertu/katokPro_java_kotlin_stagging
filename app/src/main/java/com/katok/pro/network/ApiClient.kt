@@ -461,6 +461,8 @@ class ApiClient private constructor() {
             if (url == null || url.isEmpty()) return url
 
             val baseWithoutTrailingSlash = currentBaseUrl.trimEnd('/')
+
+            // Если URL уже начинается с baseUrl, возвращаем как есть
             if (url.startsWith(baseWithoutTrailingSlash)) return url
 
             try {
@@ -474,10 +476,15 @@ class ApiClient private constructor() {
                 if (path.startsWith("api/")) {
                     path = path.substring(4) // убираем "api/"
                 }
+                // Также если путь начинается с "api-staging/", убираем его (если такой случай)
+                if (path.startsWith("api-staging/")) {
+                    path = path.substring(12) // убираем "api-staging/"
+                }
 
                 val base = currentBaseUrl.trimEnd('/')
                 return "$base/$path"
             } catch (e: Exception) {
+                // Если парсинг не удался, пробуем просто заменить
                 return url
             }
         }

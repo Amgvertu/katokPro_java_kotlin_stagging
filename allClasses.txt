@@ -4280,12 +4280,12 @@ class ApiClient private constructor() {
         private const val REMOTE_BASE_URL = "https://varamy.online/api-staging/"
 
         //Первый подключается глобальный адрес
-        @Volatile
-        private var currentBaseUrl: String = REMOTE_BASE_URL
+        /*@Volatile
+        private var currentBaseUrl: String = REMOTE_BASE_URL*/
 
         //Первый подключается локальный адрес
-        /*@Volatile
-        private var currentBaseUrl: String = LOCAL_BASE_URL*/
+        @Volatile
+        private var currentBaseUrl: String = LOCAL_BASE_URL
 
         @Volatile
         private var httpClient: OkHttpClient? = null
@@ -4682,6 +4682,8 @@ class ApiClient private constructor() {
             if (url == null || url.isEmpty()) return url
 
             val baseWithoutTrailingSlash = currentBaseUrl.trimEnd('/')
+
+            // Если URL уже начинается с baseUrl, возвращаем как есть
             if (url.startsWith(baseWithoutTrailingSlash)) return url
 
             try {
@@ -4695,10 +4697,15 @@ class ApiClient private constructor() {
                 if (path.startsWith("api/")) {
                     path = path.substring(4) // убираем "api/"
                 }
+                // Также если путь начинается с "api-staging/", убираем его (если такой случай)
+                if (path.startsWith("api-staging/")) {
+                    path = path.substring(12) // убираем "api-staging/"
+                }
 
                 val base = currentBaseUrl.trimEnd('/')
                 return "$base/$path"
             } catch (e: Exception) {
+                // Если парсинг не удался, пробуем просто заменить
                 return url
             }
         }
@@ -6841,8 +6848,8 @@ class UserRepository(context: Context) {
         return safeApiCall { apiService.uploadAvatar(body) }
     }
 
-    suspend fun deleteAvatar(): NetworkResult<Void> {
-        return safeApiCall { apiService.deleteAvatar() }
+    suspend fun deleteAvatar(): NetworkResult<Unit> {
+        return safeApiCallIgnoreNullData { apiService.deleteAvatar() }
     }
 
     suspend fun updateFcmToken(token: String): NetworkResult<Void> {
@@ -17341,14 +17348,13 @@ class ProfileFragment : Fragment() {
         super.onResume()
         val savedPosition = profileViewModel.getTabPosition().value ?: 0
 
-        // Пересоздаём адаптер, чтобы полностью сбросить внутреннее состояние ViewPager2
-        setupViewPager()
-
-        // Устанавливаем сохранённую позицию и синхронизируем TabLayout
-        binding.viewPager.setCurrentItem(savedPosition, false)
+        // Просто переключаемся на сохранённую позицию, НЕ пересоздавая адаптер
+        if (binding.viewPager.currentItem != savedPosition) {
+            binding.viewPager.setCurrentItem(savedPosition, false)
+        }
         binding.tabLayout.getTabAt(savedPosition)?.select()
 
-        // Дополнительно обновляем ViewModel, чтобы позиция была актуальной
+        // Обновляем ViewModel, чтобы позиция была актуальной
         profileViewModel.setTabPosition(savedPosition)
     }
 }
@@ -17386,6 +17392,7 @@ import com.katok.pro.network.ApiClient
 import com.katok.pro.repository.LocationRepository
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.util.Constants
+import com.katok.pro.util.ImageCompressor
 import com.katok.pro.util.PhoneUtils
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
@@ -17715,10 +17722,16 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
                     currentUserId = sessionManager.getUserId()
                 }
                 is NetworkResult.Error -> {
+                    // Если есть кэш, не показываем ошибку, чтобы не беспокоить пользователя
                     if (cachedProfile == null) {
                         handleError(result)
+                    } else {
+                        // Если кэш есть, но сервер вернул ошибку, просто игнорируем её,
+                        // потому что пользователь уже видит данные из кэша.
+                        ToastHelper.showError(requireContext(), "Не удалось обновить данные с сервера")
                     }
                 }
+
                 else -> {}
             }
         }
@@ -17868,21 +17881,42 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
     }
 
     private fun saveImageToTempFile(uri: Uri): File {
-        val timeStamp = System.currentTimeMillis().toString()
-        val tempFile = File(requireContext().cacheDir, "avatar_$timeStamp.jpg")
-        requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
-            FileOutputStream(tempFile).use { outputStream ->
-                val buffer = ByteArray(4096)
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
+        // Используем компрессор, он сам создаёт временный файл
+        val compressedFile = ImageCompressor.compressImage(
+            contentResolver = requireContext().contentResolver,
+            uri = uri,
+            maxSizeBytes = 2 * 1024 * 1024, // 2 МБ
+            maxWidth = 1024,
+            maxHeight = 1024
+        )
+
+        // Если сжатие не удалось, сохраняем как есть
+        if (compressedFile == null) {
+            ToastHelper.showError(requireContext(), "Не удалось обработать изображение")
+            val fallbackFile = File(requireContext().cacheDir, "avatar_${System.currentTimeMillis()}.jpg")
+            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(fallbackFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
                 }
             }
+            return fallbackFile
         }
-        return tempFile
+
+        return compressedFile
     }
 
     private fun showUploadAvatarDialog() {
+        val file = selectedAvatarFile ?: return
+
+        // Проверяем размер перед показом диалога
+        val sizeMB = file.length() / (1024.0 * 1024.0)
+        if (sizeMB > 10) {
+            ToastHelper.showError(requireContext(), "Изображение слишком большое (${String.format("%.1f", sizeMB)} МБ). Пожалуйста, выберите другое.")
+            selectedAvatarFile = null
+            loadProfile()
+            return
+        }
+
         AlertDialog.Builder(requireContext())
             .setTitle("Загрузить аватар")
             .setMessage("Установить выбранное изображение как аватар?")
@@ -17896,6 +17930,13 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
 
     private fun uploadAvatar() {
         val file = selectedAvatarFile ?: return
+
+        // Проверяем размер перед загрузкой (на всякий случай)
+        if (file.length() > 10 * 1024 * 1024) {
+            ToastHelper.showError(requireContext(), "Изображение слишком большое. Пожалуйста, выберите другое.")
+            return
+        }
+
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             val result = userRepository.uploadAvatar(file)
@@ -17941,10 +17982,16 @@ class ProfileInfoFragment : BaseFragment(R.layout.fragment_profile_info) {
             when (result) {
                 is NetworkResult.Success -> {
                     ToastHelper.showSuccess(requireContext(), "Аватар удалён")
-                    loadProfile()
+                    // Очищаем кэш Glide и показываем стандартную иконку
+                    Glide.with(this@ProfileInfoFragment).clear(binding.ivAvatar)
+                    binding.ivAvatar.setImageResource(R.drawable.ic_default_avatar)
+                    // Обновляем локальный кэш профиля
+                    val cachedProfile = userRepository.getCachedProfile()
+                    cachedProfile?.avatarUrl = null
+                    cachedProfile?.let { userRepository.cacheProfile(it) }
                 }
                 is NetworkResult.Error -> {
-                    handleError(result)
+                    ToastHelper.showError(requireContext(), "Не удалось удалить аватар: ${result.message}")
                 }
                 else -> {}
             }
@@ -19944,6 +19991,130 @@ object GlobalErrorHandler {
     }
 
     fun getErrorMessage(throwable: Throwable): String = handleError(throwable).message
+}
+
+========= app/src/main/java/com/katok/pro/util/ImageCompressor.kt =======
+package com.katok.pro.util
+
+import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Log
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+
+object ImageCompressor {
+
+    private const val TAG = "ImageCompressor"
+
+    /**
+     * Сжимает изображение до указанного размера
+     * @param contentResolver - для чтения URI
+     * @param uri - URI выбранного изображения
+     * @param maxSizeBytes - максимальный размер файла (по умолчанию 2 МБ)
+     * @param maxWidth - максимальная ширина
+     * @param maxHeight - максимальная высота
+     * @return сжатый файл или null
+     */
+    fun compressImage(
+        contentResolver: ContentResolver,
+        uri: Uri,
+        maxSizeBytes: Int = 2 * 1024 * 1024,
+        maxWidth: Int = 1024,
+        maxHeight: Int = 1024
+    ): File? {
+        return try {
+            Log.d(TAG, "Начинаем сжатие изображения: $uri")
+
+            // 1. Получаем исходный Bitmap
+            val originalBitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
+            if (originalBitmap == null) {
+                Log.e(TAG, "Не удалось декодировать изображение")
+                return null
+            }
+
+            Log.d(TAG, "Оригинальный размер: ${originalBitmap.width}x${originalBitmap.height}")
+
+            // 2. Масштабируем (если нужно)
+            val scaledBitmap = if (originalBitmap.width > maxWidth || originalBitmap.height > maxHeight) {
+                val scale = minOf(maxWidth.toFloat() / originalBitmap.width, maxHeight.toFloat() / originalBitmap.height)
+                val newWidth = (originalBitmap.width * scale).toInt()
+                val newHeight = (originalBitmap.height * scale).toInt()
+                Log.d(TAG, "Масштабируем до: ${newWidth}x${newHeight}")
+                Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+            } else {
+                Log.d(TAG, "Масштабирование не требуется")
+                originalBitmap // НЕ создаём копию, используем оригинал
+            }
+
+            // 3. Сжимаем с постепенным уменьшением качества
+            var quality = 90
+            var fileSize = 0L
+            var compressedBytes: ByteArray? = null
+
+            while (quality >= 20) {
+                val outputStream = ByteArrayOutputStream()
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+                val bytes = outputStream.toByteArray()
+                fileSize = bytes.size.toLong()
+
+                if (fileSize <= maxSizeBytes) {
+                    compressedBytes = bytes
+                    Log.d(TAG, "Сжатие успешно: качество=$quality%, размер=${fileSize / 1024}KB")
+                    break
+                }
+
+                quality -= 10
+                outputStream.close()
+            }
+
+            // Если всё ещё больше, уменьшаем разрешение вдвое
+            if (compressedBytes == null || fileSize > maxSizeBytes) {
+                Log.w(TAG, "Изображение всё ещё слишком большое, уменьшаем разрешение")
+                val smallerBitmap = Bitmap.createScaledBitmap(
+                    scaledBitmap,
+                    scaledBitmap.width / 2,
+                    scaledBitmap.height / 2,
+                    true
+                )
+                val outputStream = ByteArrayOutputStream()
+                smallerBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+                compressedBytes = outputStream.toByteArray()
+                smallerBitmap.recycle()
+                Log.d(TAG, "После уменьшения разрешения: ${compressedBytes.size / 1024}KB")
+            }
+
+            // 4. Сохраняем в файл
+            if (compressedBytes != null && compressedBytes.isNotEmpty()) {
+                val tempFile = File.createTempFile("avatar_", ".jpg")
+                FileOutputStream(tempFile).use { fos ->
+                    fos.write(compressedBytes)
+                }
+                Log.d(TAG, "Файл сохранён: ${tempFile.absolutePath}, размер: ${tempFile.length() / 1024}KB")
+
+                // 5. Освобождаем память (НЕ recycle() для scaledBitmap, если он используется)
+                if (scaledBitmap != originalBitmap) {
+                    scaledBitmap.recycle()
+                }
+                originalBitmap.recycle()
+
+                return tempFile
+            } else {
+                Log.e(TAG, "Не удалось сжать изображение")
+                originalBitmap.recycle()
+                if (scaledBitmap != originalBitmap) {
+                    scaledBitmap.recycle()
+                }
+                return null
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка сжатия изображения", e)
+            return null
+        }
+    }
 }
 
 ========= app/src/main/java/com/katok/pro/util/NetworkErrorHandler.kt =======
