@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -577,7 +578,7 @@ class MainViewModel @Inject constructor(
     fun optimisticRespondToAd(adId: String, role: String?) {
         // 1. Создаём временный отклик со статусом PENDING
         val tempResponse = Response().apply {
-            id = "temp_${System.currentTimeMillis()}"
+            id = UUID.randomUUID().toString()
             this.adId = adId
             // Получаем ID текущего пользователя из sessionManager
             userId = runBlocking { sessionManager.getUserId() }

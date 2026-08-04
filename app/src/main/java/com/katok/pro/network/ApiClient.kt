@@ -382,7 +382,7 @@ class ApiClient private constructor() {
             }
 
             // Собираем итоговый URL
-            return "$webSocketProtocol$hostPortPath/ws"
+            return "$webSocketProtocol$hostPortPath/ws-staging"
         }
 
         private fun getTrustAllCerts(): Array<TrustManager> {
