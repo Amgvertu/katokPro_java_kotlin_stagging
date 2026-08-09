@@ -29,6 +29,18 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />-->
 
+        <meta-data
+            android:name="com.huawei.hms.client.appid"
+            android:value="appid=118382697" />
+
+        <service
+            android:name=".services.KatokHmsMessageService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".services.WebSocketForegroundService"
             android:enabled="true"

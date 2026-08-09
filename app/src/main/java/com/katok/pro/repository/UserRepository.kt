@@ -89,4 +89,9 @@ class UserRepository(context: Context) {
     suspend fun getTermsOfService(): NetworkResult<Agreement> {
         return safeApiCall { apiService.getTermsOfService() }
     }
+
+    suspend fun registerPushToken(token: String, platform: String): NetworkResult<Unit> {
+        val request = PushTokenRequest(token, platform)
+        return safeApiCallIgnoreNullData { apiService.registerPushToken(request) }
+    }
 }

@@ -34,6 +34,7 @@ import com.katok.pro.model.admin.AdminMessage
 import com.katok.pro.model.admin.AdminMessageListResponse
 import com.katok.pro.model.admin.AdminMessageRequest
 import com.katok.pro.model.AdvertisingStatistics
+import com.katok.pro.model.PushTokenRequest
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
@@ -480,5 +481,8 @@ interface ApiService {
         @Query("dateFrom") dateFrom: String? = null,
         @Query("dateTo") dateTo: String? = null
     ): Response<ApiResponse<AdvertisingStatistics>>
+
+    @POST("push/register")
+    suspend fun registerPushToken(@Body request: PushTokenRequest): Response<ApiResponse<Void>>
 
 }
