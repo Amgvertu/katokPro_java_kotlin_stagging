@@ -58,6 +58,8 @@ dependencies {
         exclude group: 'ru.ok.tracer', module: 'tracer-manifest'
     }
 
+    implementation 'com.huawei.hms:push:6.12.0.300'
+
 
     //Huawei
     implementation libs.agconnect.appmessaging
