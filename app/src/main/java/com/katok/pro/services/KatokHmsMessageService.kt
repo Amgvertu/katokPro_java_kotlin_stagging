@@ -8,6 +8,8 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.huawei.hms.push.HmsMessageService
 import com.huawei.hms.push.RemoteMessage
 import com.katok.pro.MainActivity
@@ -21,6 +23,7 @@ class KatokHmsMessageService : HmsMessageService() {
 
     companion object {
         private const val TAG = "KatokHMS"
+        private val gson = Gson()
     }
 
     override fun onNewToken(token: String?) {
@@ -36,10 +39,15 @@ class KatokHmsMessageService : HmsMessageService() {
         if (remoteMessage == null) return
         Log.d(TAG, "📩 HMS message received")
 
-        val data = remoteMessage.data
-        if (data.isNotEmpty()) {
-            Log.d(TAG, "Data payload: $data")
-            handleDataMessage(data)
+        // В Huawei SDK data возвращается как String (JSON)
+        val dataString = remoteMessage.data
+        Log.d(TAG, "Raw data: $dataString")
+
+        // Парсим JSON в Map
+        val dataMap = parseDataToMap(dataString)
+        if (dataMap != null && dataMap.isNotEmpty()) {
+            Log.d(TAG, "Data payload: $dataMap")
+            handleDataMessage(dataMap)
         }
 
         val notification = remoteMessage.notification
@@ -49,8 +57,23 @@ class KatokHmsMessageService : HmsMessageService() {
         }
     }
 
+    /**
+     * Парсит строку JSON в Map<String, String>
+     */
+    private fun parseDataToMap(dataString: String?): Map<String, String>? {
+        if (dataString.isNullOrEmpty()) return null
+        return try {
+            val type = object : TypeToken<Map<String, String>>() {}.type
+            gson.fromJson<Map<String, String>>(dataString, type)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse data string: $dataString", e)
+            null
+        }
+    }
+
     private fun handleDataMessage(data: Map<String, String>) {
         val type = data["type"]
+        Log.d(TAG, "Handling message type: $type")
         when (type) {
             "WAKE_UP" -> {
                 Log.d(TAG, "🎯 WAKE_UP message received, starting WebSocket service")
@@ -66,12 +89,15 @@ class KatokHmsMessageService : HmsMessageService() {
                 val body = data["body"]
                 showHmsNotification(title, body)
             }
+            else -> {
+                Log.d(TAG, "Unknown message type: $type")
+            }
         }
     }
 
     private fun showHmsNotification(title: String?, body: String?) {
-        var notificationTitle = title ?: "Новое уведомление"
-        var notificationBody = body ?: ""
+        val notificationTitle = title ?: "Новое уведомление"
+        val notificationBody = body ?: ""
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -121,7 +147,6 @@ class KatokHmsMessageService : HmsMessageService() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            // Используем обновлённый метод, который регистрирует токен с указанием платформы
             val result = com.katok.pro.repository.UserRepository(this@KatokHmsMessageService)
                 .registerPushToken(token, "HMS")
             when (result) {
