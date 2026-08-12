@@ -69,6 +69,7 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
     private val reconnectHandler = Handler(Looper.getMainLooper())
     private var reconnectRunnable: Runnable? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null   // ← перенесено из companion
+    private val pendingAdIds = mutableSetOf<String>()
 
     override fun onCreate() {
         super.onCreate()
@@ -143,6 +144,15 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
                         isConnected = true
                     }
                     Log.d(TAG, "✅ WebSocket connected")
+
+                    // Восстанавливаем отложенные подписки
+                    if (pendingAdIds.isNotEmpty()) {
+                        Log.d(TAG, "Restoring ${pendingAdIds.size} deferred subscriptions")
+                        pendingAdIds.forEach { adId ->
+                            sharedWebSocketManager?.subscribeToAd(adId)
+                        }
+                        pendingAdIds.clear()
+                    }
                 }
 
                 override fun onDisconnected() {
@@ -209,6 +219,24 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
             stopSelf()
             return START_NOT_STICKY
         }
+        when (intent?.action) {
+            "SUBSCRIBE_TO_ADS" -> {
+                val adIds = intent.getStringArrayListExtra("ad_ids") ?: emptyList()
+                synchronized(webSocketLock) {
+                    if (isConnected && sharedWebSocketManager != null) {
+                        adIds.forEach { adId ->
+                            sharedWebSocketManager?.subscribeToAd(adId)
+                        }
+                        Log.d(TAG, "Subscribed to ${adIds.size} ads")
+                    } else {
+                        // Если не подключены, сохраняем для будущей подписки
+                        pendingAdIds.addAll(adIds)
+                        Log.d(TAG, "Deferred subscription for ${adIds.size} ads")
+                    }
+                }
+            }
+        }
+
         synchronized(webSocketLock) {
             if (sharedWebSocketManager == null || !isConnected) {
                 currentToken = token
@@ -271,18 +299,27 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
     }
 
     override fun onTokenRefreshed(newAccessToken: String?) {
-        Log.d(TAG, "Token refreshed, reconnecting")
+        Log.d(TAG, "Token refreshed, reconnecting WebSocket")
         synchronized(webSocketLock) {
             currentToken = newAccessToken
+
+            // Отменяем запланированное переподключение
             reconnectRunnable?.let {
                 reconnectHandler.removeCallbacks(it)
+                reconnectRunnable = null
             }
+
+            // Полностью уничтожаем старый менеджер
             sharedWebSocketManager?.let {
                 it.disconnect()
                 sharedWebSocketManager = null
             }
+
+            // Сбрасываем флаги
             isConnecting = false
             isConnected = false
+
+            // Подключаемся с новым токеном
             connectWebSocket()
         }
     }

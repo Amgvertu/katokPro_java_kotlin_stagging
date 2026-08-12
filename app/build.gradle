@@ -52,12 +52,7 @@ android {
 
 dependencies {
 
-    implementation platform("com.edna.android:push-x-bom:2.6.0")
-    implementation ("com.edna.android:push-lite-rustore-debug") {
-        exclude group: 'ru.ok.tracer', module: 'tracer-lite-crash-report'
-        exclude group: 'ru.ok.tracer', module: 'tracer-manifest'
-    }
-
+    implementation 'ru.rustore.sdk:pushclient:7.3.0'
     implementation 'com.huawei.hms:push:6.12.0.300'
 
 

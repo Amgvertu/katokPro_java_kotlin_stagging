@@ -149,13 +149,14 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
 
         val userRepository = UserRepository(this)
         CoroutineScope(Dispatchers.IO).launch {
-            val result = userRepository.updateFcmToken(token)
+            // Используем единый эндпоинт /api/push/register
+            val result = userRepository.registerPushToken(token, "FCM")
             when (result) {
                 is NetworkResult.Success -> {
-                    Log.d(TAG, "✅ FCM token sent to server")
+                    Log.d(TAG, "✅ FCM token registered via /api/push/register")
                 }
                 is NetworkResult.Error -> {
-                    Log.e(TAG, "Failed to send FCM token: ${result.message}")
+                    Log.e(TAG, "Failed to register FCM token: ${result.message}")
                 }
                 else -> {}
             }

@@ -189,7 +189,10 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
                 feedAdapter.submitList(items)
                 updateEmptyView(items.isEmpty())
                 val adIds = items.filterIsInstance<Ad>().mapNotNull { it.id?.toString() }
-                WebSocketSubscriptionManager.subscribeToAdIds(adIds)
+                val intent = Intent(requireContext(), WebSocketForegroundService::class.java)
+                intent.action = "SUBSCRIBE_TO_ADS"
+                intent.putStringArrayListExtra("ad_ids", ArrayList(adIds))
+                requireContext().startService(intent)
             }
         }
 

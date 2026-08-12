@@ -8,10 +8,8 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.huawei.hms.push.HmsMessageService
-import com.huawei.hms.push.RemoteMessage
+import com.edna.android.push.sdk.PushService
+import com.edna.android.push.sdk.data.PushMessage
 import com.katok.pro.MainActivity
 import com.katok.pro.R
 import com.katok.pro.model.NetworkResult
@@ -21,61 +19,27 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class KatokHmsMessageService : HmsMessageService() {
+class KatokRuStoreMessagingService : PushService() {
 
     companion object {
-        private const val TAG = "KatokHMS"
-        private val gson = Gson()
+        private const val TAG = "KatokRuStore"
     }
 
-    override fun onNewToken(token: String?) {
+    override fun onNewToken(token: String) {
         super.onNewToken(token)
-        if (token != null) {
-            Log.d(TAG, "🔥 New HMS token: $token")
-            sendTokenToServer(token)
-        }
+        Log.d(TAG, "🔥 New RuStore token: $token")
+        sendTokenToServer(token)
     }
 
-    override fun onMessageReceived(remoteMessage: RemoteMessage?) {
-        super.onMessageReceived(remoteMessage)
-        if (remoteMessage == null) return
-        Log.d(TAG, "📩 HMS message received")
+    override fun onMessageReceived(message: PushMessage) {
+        super.onMessageReceived(message)
+        Log.d(TAG, "📩 RuStore message received")
 
-        // В Huawei SDK data возвращается как String (JSON)
-        val dataString = remoteMessage.data
-        Log.d(TAG, "Raw data: $dataString")
+        val data = message.data
+        Log.d(TAG, "Data: $data")
 
-        // Парсим JSON в Map
-        val dataMap = parseDataToMap(dataString)
-        if (dataMap != null && dataMap.isNotEmpty()) {
-            Log.d(TAG, "Data payload: $dataMap")
-            handleDataMessage(dataMap)
-        }
-
-        val notification = remoteMessage.notification
-        if (notification != null) {
-            Log.d(TAG, "Notification payload: ${notification.title}")
-            showHmsNotification(notification.title, notification.body)
-        }
-    }
-
-    /**
-     * Парсит строку JSON в Map<String, String>
-     */
-    private fun parseDataToMap(dataString: String?): Map<String, String>? {
-        if (dataString.isNullOrEmpty()) return null
-        return try {
-            val type = object : TypeToken<Map<String, String>>() {}.type
-            gson.fromJson<Map<String, String>>(dataString, type)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse data string: $dataString", e)
-            null
-        }
-    }
-
-    private fun handleDataMessage(data: Map<String, String>) {
         val type = data["type"]
-        Log.d(TAG, "Handling message type: $type")
+
         when (type) {
             "WAKE_UP" -> {
                 Log.d(TAG, "🎯 WAKE_UP message received, starting WebSocket service")
@@ -87,9 +51,9 @@ class KatokHmsMessageService : HmsMessageService() {
                 }
             }
             "REAL", "ADMIN_MESSAGE" -> {
-                val title = data["title"]
-                val body = data["body"]
-                showHmsNotification(title, body)
+                val title = data["title"] ?: "Новое уведомление"
+                val body = data["body"] ?: ""
+                showRuStoreNotification(title, body)
             }
             else -> {
                 Log.d(TAG, "Unknown message type: $type")
@@ -97,10 +61,11 @@ class KatokHmsMessageService : HmsMessageService() {
         }
     }
 
-    private fun showHmsNotification(title: String?, body: String?) {
-        val notificationTitle = title ?: "Новое уведомление"
-        val notificationBody = body ?: ""
+    private fun showRuStoreNotification(title: String, body: String) {
+        // Создаём канал уведомлений для Android 8+
+        createNotificationChannel()
 
+        // Intent для открытия MainActivity
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -110,20 +75,18 @@ class KatokHmsMessageService : HmsMessageService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        createNotificationChannel()
-
         val builder = NotificationCompat.Builder(this, "notification_channel")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(notificationTitle)
-            .setContentText(notificationBody)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(notificationBody))
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         manager?.notify(System.currentTimeMillis().toInt(), builder.build())
-        Log.d(TAG, "🔔 HMS notification shown")
+        Log.d(TAG, "🔔 RuStore notification shown")
     }
 
     private fun createNotificationChannel() {
@@ -144,19 +107,19 @@ class KatokHmsMessageService : HmsMessageService() {
     private fun sendTokenToServer(token: String) {
         val accessToken = TokenManager.getInstance(this).getAccessToken()
         if (accessToken == null || accessToken.isEmpty()) {
-            Log.d(TAG, "User not logged in, HMS token will be sent later")
+            Log.d(TAG, "User not logged in, RuStore token will be sent later")
             return
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            val result = UserRepository(this@KatokHmsMessageService)
-                .registerPushToken(token, "HMS")
+            val result = UserRepository(this@KatokRuStoreMessagingService)
+                .registerPushToken(token, "RUSTORE")
             when (result) {
                 is NetworkResult.Success -> {
-                    Log.d(TAG, "✅ HMS token registered via /api/push/register")
+                    Log.d(TAG, "✅ RuStore token registered via /api/push/register")
                 }
                 is NetworkResult.Error -> {
-                    Log.e(TAG, "Failed to register HMS token: ${result.message}")
+                    Log.e(TAG, "Failed to register RuStore token: ${result.message}")
                 }
                 else -> {}
             }

@@ -20,6 +20,15 @@ class KatokApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Инициализация RuStore Push SDK
+        try {
+            // Укажите ваш реальный App ID из консоли RuStore (обычно число, например "118382697")
+            RuStorePushSdk.init(this, "118382697")
+            Log.d("KatokApp", "✅ RuStore SDK initialized")
+        } catch (e: Exception) {
+            Log.e("KatokApp", "Failed to init RuStore SDK", e)
+        }
         // Инициализация глобального обработчика ошибок
         GlobalErrorHandler.init(this)
 
