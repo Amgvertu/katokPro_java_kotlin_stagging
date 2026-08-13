@@ -28,6 +28,7 @@ import com.katok.pro.services.WebSocketForegroundService
 import com.katok.pro.util.PhoneUtils
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
+import com.katok.pro.util.TokenRegistrationService
 import com.katok.pro.workers.TokenRefreshScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -118,6 +119,9 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
 
                     tokenManager.saveTokens(accessToken, refreshToken)
                     sessionManager.saveUser(user)
+
+                    val tokenRegistrationService = TokenRegistrationService(requireContext())
+                    tokenRegistrationService.registerAllTokens()
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)

@@ -48,12 +48,33 @@ class SecurePreferences private constructor(context: Context) {
         }
     }
 
+
+
+    // FCM
     fun saveFcmToken(token: String) {
         prefs.edit().putString("fcm_token", token).apply()
     }
 
     fun getFcmToken(): String? {
         return prefs.getString("fcm_token", null)
+    }
+
+    // ========== НОВОЕ: HMS ==========
+    fun saveHmsToken(token: String) {
+        prefs.edit().putString("hms_token", token).apply()
+    }
+
+    fun getHmsToken(): String? {
+        return prefs.getString("hms_token", null)
+    }
+
+    // ========== НОВОЕ: RuStore ==========
+    fun saveRuStoreToken(token: String) {
+        prefs.edit().putString("rustore_token", token).apply()
+    }
+
+    fun getRuStoreToken(): String? {
+        return prefs.getString("rustore_token", null)
     }
 
     fun clear() {

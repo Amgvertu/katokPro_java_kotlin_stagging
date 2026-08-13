@@ -62,13 +62,9 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
 
         when (type) {
             "WAKE_UP" -> {
-                Log.d(TAG, "🎯 WAKE_UP message received, starting WebSocket service")
-                val accessToken = TokenManager.getInstance(this).getAccessToken()
-                if (accessToken != null && accessToken.isNotEmpty()) {
-                    WebSocketForegroundService.start(this)
-                } else {
-                    Log.e(TAG, "No access token, cannot start WebSocket service")
-                }
+                // ⚠️ Клиенту не нужно WAKE_UP - это для SMS-шлюза
+                // Просто игнорируем или логируем
+                Log.d(TAG, "⏳ WAKE_UP получен (игнорируем на клиенте)")
             }
             "NEW_NOTIFICATION" -> {
                 val title = data["title"]
@@ -76,6 +72,12 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
                 val entityId = data["entityId"]
                 val notificationType = data["notificationType"]
                 showFcmNotification(title, body, notificationType, entityId)
+            }
+            "REAL" -> {
+                // Обычное уведомление
+                val title = data["title"]
+                val body = data["body"]
+                showFcmNotification(title, body, null, null)
             }
         }
     }
@@ -144,21 +146,33 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
         val accessToken = TokenManager.getInstance(this).getAccessToken()
         if (accessToken == null || accessToken.isEmpty()) {
             Log.d(TAG, "User not logged in, token will be sent later")
+            // Сохраняем токен, чтобы отправить позже
             return
         }
 
         val userRepository = UserRepository(this)
         CoroutineScope(Dispatchers.IO).launch {
-            // Используем единый эндпоинт /api/push/register
-            val result = userRepository.registerPushToken(token, "FCM")
-            when (result) {
-                is NetworkResult.Success -> {
-                    Log.d(TAG, "✅ FCM token registered via /api/push/register")
+            var retries = 3
+            var success = false
+            while (retries > 0 && !success) {
+                val result = userRepository.registerPushToken(token, "FCM")
+                when (result) {
+                    is NetworkResult.Success -> {
+                        Log.d(TAG, "✅ FCM token registered")
+                        success = true
+                    }
+                    is NetworkResult.Error -> {
+                        Log.e(TAG, "Failed to register FCM token (attempt ${4-retries}): ${result.message}")
+                        retries--
+                        if (retries > 0) {
+                            kotlinx.coroutines.delay(2000) // ждём 2 секунды перед повтором
+                        }
+                    }
+                    else -> {}
                 }
-                is NetworkResult.Error -> {
-                    Log.e(TAG, "Failed to register FCM token: ${result.message}")
-                }
-                else -> {}
+            }
+            if (!success) {
+                Log.e(TAG, "❌ Failed to register FCM token after 3 attempts")
             }
         }
     }

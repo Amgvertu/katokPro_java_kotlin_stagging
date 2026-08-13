@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import ru.rustore.sdk.pushclient.RuStorePushClient
 import com.katok.pro.network.ApiClient
 import com.katok.pro.util.FormPersistence
 import com.katok.pro.util.GlobalErrorHandler
@@ -23,8 +24,11 @@ class KatokApplication : Application() {
 
         // Инициализация RuStore Push SDK
         try {
-            // Укажите ваш реальный App ID из консоли RuStore (обычно число, например "118382697")
-            RuStorePushSdk.init(this, "118382697")
+            RuStorePushClient.init(
+                application = this,
+                projectId = "jl4uTL62lrP4Kx3GlhMfSMi7y6f6eY0d",
+
+            )
             Log.d("KatokApp", "✅ RuStore SDK initialized")
         } catch (e: Exception) {
             Log.e("KatokApp", "Failed to init RuStore SDK", e)

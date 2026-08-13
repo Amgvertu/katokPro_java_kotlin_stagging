@@ -8,18 +8,19 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.edna.android.push.sdk.PushService
-import com.edna.android.push.sdk.data.PushMessage
 import com.katok.pro.MainActivity
 import com.katok.pro.R
 import com.katok.pro.model.NetworkResult
 import com.katok.pro.repository.UserRepository
+import com.katok.pro.util.SecurePreferences
 import com.katok.pro.util.TokenManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.rustore.sdk.pushclient.messaging.model.RemoteMessage  // ← правильный импорт
+import ru.rustore.sdk.pushclient.messaging.service.RuStoreMessagingService
 
-class KatokRuStoreMessagingService : PushService() {
+class KatokRuStoreMessagingService : RuStoreMessagingService() {
 
     companion object {
         private const val TAG = "KatokRuStore"
@@ -28,32 +29,36 @@ class KatokRuStoreMessagingService : PushService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "🔥 New RuStore token: $token")
+        // Сохраняем локально
+        SecurePreferences.getInstance(this).saveRuStoreToken(token)
+        // Отправляем на сервер
         sendTokenToServer(token)
     }
 
-    override fun onMessageReceived(message: PushMessage) {
+    override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         Log.d(TAG, "📩 RuStore message received")
 
-        val data = message.data
-        Log.d(TAG, "Data: $data")
+        // Получаем данные из сообщения
+        val dataMap = message.data
+        Log.d(TAG, "Data: $dataMap")
 
-        val type = data["type"]
+        // Извлекаем тип и другие поля
+        val type = dataMap["type"]
+        Log.d(TAG, "Message type: $type")
 
         when (type) {
             "WAKE_UP" -> {
-                Log.d(TAG, "🎯 WAKE_UP message received, starting WebSocket service")
+                Log.d(TAG, "🎯 WAKE_UP received, starting WebSocket")
                 val accessToken = TokenManager.getInstance(this).getAccessToken()
                 if (accessToken != null && accessToken.isNotEmpty()) {
                     WebSocketForegroundService.start(this)
-                } else {
-                    Log.e(TAG, "No access token, cannot start WebSocket service")
                 }
             }
             "REAL", "ADMIN_MESSAGE" -> {
-                val title = data["title"] ?: "Новое уведомление"
-                val body = data["body"] ?: ""
-                showRuStoreNotification(title, body)
+                val title = dataMap["title"] ?: "Новое уведомление"
+                val body = dataMap["body"] ?: ""
+                showNotification(title, body)
             }
             else -> {
                 Log.d(TAG, "Unknown message type: $type")
@@ -61,11 +66,9 @@ class KatokRuStoreMessagingService : PushService() {
         }
     }
 
-    private fun showRuStoreNotification(title: String, body: String) {
-        // Создаём канал уведомлений для Android 8+
+    private fun showNotification(title: String, body: String) {
         createNotificationChannel()
 
-        // Intent для открытия MainActivity
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -107,7 +110,7 @@ class KatokRuStoreMessagingService : PushService() {
     private fun sendTokenToServer(token: String) {
         val accessToken = TokenManager.getInstance(this).getAccessToken()
         if (accessToken == null || accessToken.isEmpty()) {
-            Log.d(TAG, "User not logged in, RuStore token will be sent later")
+            Log.d(TAG, "User not logged in, token will be sent later")
             return
         }
 
@@ -115,12 +118,8 @@ class KatokRuStoreMessagingService : PushService() {
             val result = UserRepository(this@KatokRuStoreMessagingService)
                 .registerPushToken(token, "RUSTORE")
             when (result) {
-                is NetworkResult.Success -> {
-                    Log.d(TAG, "✅ RuStore token registered via /api/push/register")
-                }
-                is NetworkResult.Error -> {
-                    Log.e(TAG, "Failed to register RuStore token: ${result.message}")
-                }
+                is NetworkResult.Success -> Log.d(TAG, "✅ RuStore token registered")
+                is NetworkResult.Error -> Log.e(TAG, "Failed: ${result.message}")
                 else -> {}
             }
         }

@@ -34,7 +34,7 @@
             android:name=".services.KatokRuStoreMessagingService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.edna.android.push.sdk.PUSH_EVENT" />
+                <action android:name="ru.rustore.sdk.pushclient.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 

@@ -16,6 +16,7 @@ import com.katok.pro.MainActivity
 import com.katok.pro.R
 import com.katok.pro.model.NetworkResult
 import com.katok.pro.repository.UserRepository
+import com.katok.pro.util.SecurePreferences
 import com.katok.pro.util.TokenManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,9 @@ class KatokHmsMessageService : HmsMessageService() {
         super.onNewToken(token)
         if (token != null) {
             Log.d(TAG, "🔥 New HMS token: $token")
+            // Сохраняем локально
+            SecurePreferences.getInstance(this).saveHmsToken(token)
+            // Отправляем на сервер
             sendTokenToServer(token)
         }
     }
@@ -78,18 +82,21 @@ class KatokHmsMessageService : HmsMessageService() {
         Log.d(TAG, "Handling message type: $type")
         when (type) {
             "WAKE_UP" -> {
-                Log.d(TAG, "🎯 WAKE_UP message received, starting WebSocket service")
-                val accessToken = TokenManager.getInstance(this).getAccessToken()
-                if (accessToken != null && accessToken.isNotEmpty()) {
-                    WebSocketForegroundService.start(this)
-                } else {
-                    Log.e(TAG, "No access token, cannot start WebSocket service")
-                }
+                // Игнорируем на клиенте
+                Log.d(TAG, "⏳ WAKE_UP получен (игнорируем)")
             }
-            "REAL", "ADMIN_MESSAGE" -> {
-                val title = data["title"]
-                val body = data["body"]
+            "REAL", "ADMIN_MESSAGE", "NEW_NOTIFICATION" -> {
+                val title = data["title"] ?: "Новое уведомление"
+                val body = data["body"] ?: ""
+
+                // Показываем уведомление
                 showHmsNotification(title, body)
+
+                // ========== НОВОЕ: Обновляем счетчик непрочитанных ==========
+                val intent = Intent("REFRESH_UNREAD_COUNT")
+                intent.putExtra("type", "HMS")
+                sendBroadcast(intent)
+                Log.d(TAG, "Отправлен запрос на обновление счетчика")
             }
             else -> {
                 Log.d(TAG, "Unknown message type: $type")
