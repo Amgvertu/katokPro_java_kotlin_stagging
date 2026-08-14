@@ -121,7 +121,9 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
                     sessionManager.saveUser(user)
 
                     val tokenRegistrationService = TokenRegistrationService(requireContext())
-                    tokenRegistrationService.registerAllTokens()
+                    lifecycleScope.launch {
+                        tokenRegistrationService.registerAllTokens()
+                    }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
