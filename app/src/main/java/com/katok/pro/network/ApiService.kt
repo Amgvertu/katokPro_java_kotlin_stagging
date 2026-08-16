@@ -292,6 +292,12 @@ interface ApiService {
     @POST("notifications/test-public")
     suspend fun testPublicNotification(): Response<ApiResponse<Void>>
 
+    @POST("notifications/test-push")
+    suspend fun sendTestPush(
+        @Query("title") title: String,
+        @Query("body") body: String
+    ): Response<ApiResponse<Void>>
+
     // Уведомление автору при отмене отклика пользователем
     @POST("notifications/response-cancelled")
     suspend fun notifyResponseCancelled(@Body body: Map<String, String>): Response<ApiResponse<Void>>

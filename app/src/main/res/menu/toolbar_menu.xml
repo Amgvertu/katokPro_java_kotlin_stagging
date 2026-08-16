@@ -20,5 +20,9 @@
         android:orderInCategory="200"
         app:showAsAction="always"
         app:actionLayout="@layout/menu_notification_item"/>
+    <item
+        android:id="@+id/action_test_push"
+        android:title="Тест Push"
+        app:showAsAction="never" />
 </menu>
 

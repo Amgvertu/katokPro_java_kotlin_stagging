@@ -79,25 +79,6 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ТЕСТОВАЯ КНОПКА ДЛЯ PUSH (можно удалить после проверки)
-        binding.root.postDelayed({
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    val repository = com.katok.pro.repository.NotificationRepository()
-                    val result = repository.testNotification()
-                    if (result is com.katok.pro.model.NetworkResult.Success) {
-                        Toast.makeText(requireContext(), "✅ Тестовый push отправлен", Toast.LENGTH_SHORT).show()
-                    } else if (result is com.katok.pro.model.NetworkResult.Error) {
-                        Toast.makeText(requireContext(), "❌ Ошибка: ${result.message}", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "❌ Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }, 3000)
-
-
-
         sessionManager = SessionManager(requireContext())
         viewModel = androidx.lifecycle.ViewModelProvider(this)[MainViewModel::class.java]
 

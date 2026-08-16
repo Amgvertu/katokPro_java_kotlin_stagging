@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import ru.rustore.sdk.pushclient.RuStorePushClient
 import kotlin.coroutines.resume
+import kotlinx.coroutines.delay
 
 class TokenRegistrationService(private val context: Context) {
 
@@ -69,57 +70,55 @@ class TokenRegistrationService(private val context: Context) {
 
     private suspend fun registerRuStoreToken() {
         try {
-            // Проверяем, есть ли RuStore на устройстве
             if (isRuStoreAvailable()) {
-                // Получаем RuStore токен асинхронно
-                val token = getRuStoreToken()
+                Log.d(TAG, "📱 RuStore доступен, проверяем сохранённый токен")
+                val token = SecurePreferences.getInstance(context).getRuStoreToken()
                 if (token != null && token.isNotEmpty()) {
-                    Log.d(TAG, "📱 RuStore токен получен: ${token.take(20)}...")
+                    Log.d(TAG, "📱 RuStore токен найден в хранилище: ${token.take(20)}...")
                     sendTokenToServer(token, "RUSTORE")
                 } else {
-                    Log.w(TAG, "⚠️ RuStore токен пустой")
+                    Log.w(TAG, "⚠️ RuStore токен не найден в хранилище, он будет получен позже через onNewToken")
                 }
+            } else {
+                Log.w(TAG, "⚠️ RuStore недоступен на устройстве")
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Ошибка регистрации RuStore токена", e)
         }
     }
 
-    /**
-     * Получение RuStore токена с использованием suspendCancellableCoroutine
-     * Согласно документации RuStore: RuStorePushClient.getToken() возвращает Task<String>
-     */
-    private suspend fun getRuStoreToken(): String? {
-        return suspendCancellableCoroutine { continuation ->
-            try {
-                // Получаем токен через Task
-                RuStorePushClient.getToken()
-                    .addOnSuccessListener { token ->
-                        Log.d(TAG, "✅ RuStore токен получен: ${token?.take(20)}")
-                        continuation.resume(token)
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.e(TAG, "❌ Ошибка получения RuStore токена", exception)
-                        continuation.resume(null)
-                    }
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Исключение при получении RuStore токена", e)
-                continuation.resume(null)
-            }
-        }
-    }
-
     private suspend fun sendTokenToServer(token: String, platform: String) {
         val userRepository = UserRepository(context)
-        val result = userRepository.registerPushToken(token, platform)
-        when (result) {
-            is NetworkResult.Success -> {
-                Log.d(TAG, "✅ $platform токен зарегистрирован на сервере")
+        var attempts = 0
+        val maxAttempts = 3
+        var success = false
+        while (attempts < maxAttempts && !success) {
+            attempts++
+            try {
+                val result = userRepository.registerPushToken(token, platform)
+                when (result) {
+                    is NetworkResult.Success -> {
+                        Log.d(TAG, "✅ $platform токен зарегистрирован на сервере (попытка $attempts)")
+                        success = true
+                    }
+                    is NetworkResult.Error -> {
+                        Log.e(TAG, "❌ Ошибка регистрации $platform токена (попытка $attempts): ${result.message}")
+                        if (attempts < maxAttempts) {
+                            // ждём 1 секунду перед повтором
+                            delay(1000)
+                        }
+                    }
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Исключение при регистрации $platform токена (попытка $attempts): ${e.message}")
+                if (attempts < maxAttempts) {
+                    delay(1000)
+                }
             }
-            is NetworkResult.Error -> {
-                Log.e(TAG, "❌ Ошибка регистрации $platform токена: ${result.message}")
-            }
-            else -> {}
+        }
+        if (!success) {
+            Log.e(TAG, "❌ Не удалось зарегистрировать $platform токен после $maxAttempts попыток")
         }
     }
 

@@ -61,4 +61,8 @@ class NotificationRepository {
         val body = hashMapOf("adId" to adId, "userId" to userId)
         return safeApiCall { apiService.notifyApprovalCancelled(body) }
     }
+
+    suspend fun sendTestPush(title: String, body: String): NetworkResult<Unit> {
+        return safeApiCallIgnoreNullData { apiService.sendTestPush(title, body) }
+    }
 }

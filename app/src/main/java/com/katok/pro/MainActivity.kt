@@ -2,7 +2,10 @@ package com.katok.pro
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -62,6 +65,17 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
     }
 
+    private val unreadCountReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == "REFRESH_UNREAD_COUNT") {
+                Log.d(TAG, "Получен запрос на обновление счётчика непрочитанных")
+                // Обновляем ViewModel
+                val messagesViewModel = ViewModelProvider(this@MainActivity)[MessagesViewModel::class.java]
+                messagesViewModel.refreshUnreadCount()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Установка локали и темы
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -77,6 +91,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
@@ -87,6 +103,13 @@ class MainActivity : AppCompatActivity() {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
             }
+        }
+
+        val filter = IntentFilter("REFRESH_UNREAD_COUNT")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(unreadCountReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(unreadCountReceiver, filter)
         }
 
         val navHostFragment = supportFragmentManager
@@ -318,7 +341,32 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.feedbackFragment, null, navOptions)
                 true
             }
+            R.id.action_test_push -> {
+                sendTestPush()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun sendTestPush() {
+        lifecycleScope.launch {
+            try {
+                val repository = com.katok.pro.repository.NotificationRepository()
+                // Задаём заголовок и тело уведомления
+                val title = "🔔 Тестовое push-уведомление"
+                val body = "Если вы это видите – push работает!"
+                val result = repository.sendTestPush(title, body)
+                if (result is com.katok.pro.model.NetworkResult.Success) {
+                    Toast.makeText(this@MainActivity, "✅ Тестовый push отправлен", Toast.LENGTH_SHORT).show()
+                } else if (result is com.katok.pro.model.NetworkResult.Error) {
+                    Toast.makeText(this@MainActivity, "❌ Ошибка: ${result.message}", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@MainActivity, "ℹ️ Статус: ${result::class.simpleName}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "❌ Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -376,6 +424,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        try {
+            unregisterReceiver(unreadCountReceiver)
+        } catch (e: Exception) {
+            // игнорируем, если ресивер не был зарегистрирован
+        }
         authListener?.let { ApiClient.removeAuthListener(it) }
         super.onDestroy()
     }

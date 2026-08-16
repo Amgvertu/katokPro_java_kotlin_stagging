@@ -45,14 +45,12 @@ class KatokHmsMessageService : HmsMessageService() {
         if (remoteMessage == null) return
         Log.d(TAG, "📩 HMS message received")
 
-        // В Huawei SDK data возвращается как String (JSON)
+        // Получаем данные как строку JSON и парсим в Map
         val dataString = remoteMessage.data
         Log.d(TAG, "Raw data: $dataString")
-
-        // Парсим JSON в Map
         val dataMap = parseDataToMap(dataString)
+
         if (dataMap != null && dataMap.isNotEmpty()) {
-            Log.d(TAG, "Data payload: $dataMap")
             handleDataMessage(dataMap)
         }
 
@@ -63,9 +61,6 @@ class KatokHmsMessageService : HmsMessageService() {
         }
     }
 
-    /**
-     * Парсит строку JSON в Map<String, String>
-     */
     private fun parseDataToMap(dataString: String?): Map<String, String>? {
         if (dataString.isNullOrEmpty()) return null
         return try {
@@ -169,4 +164,5 @@ class KatokHmsMessageService : HmsMessageService() {
             }
         }
     }
+
 }
