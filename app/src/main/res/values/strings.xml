@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Katok.pro-staqing</string>
+    <string name="app_name">Katok.pro</string>
 
     <string-array name="goalie_count_options">
         <item>1</item>

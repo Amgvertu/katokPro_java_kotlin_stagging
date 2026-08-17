@@ -41,6 +41,7 @@ import com.katok.pro.util.PrivacyHelper
 import com.katok.pro.util.ProfileHelper
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
+import com.katok.pro.util.TokenRegistrationService
 import com.katok.pro.workers.TokenRefreshScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -345,7 +346,39 @@ class MainActivity : AppCompatActivity() {
                 sendTestPush()
                 true
             }
+            R.id.action_register_tokens -> {
+                registerPushTokens()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun registerPushTokens() {
+        lifecycleScope.launch {
+            // Проверяем, залогинен ли пользователь
+            val isLoggedIn = sessionManager.isLoggedIn()
+            if (!isLoggedIn) {
+                Toast.makeText(this@MainActivity, "Сначала войдите в систему", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            try {
+                val tokenRegistrationService = TokenRegistrationService(this@MainActivity)
+                tokenRegistrationService.registerAllTokens()
+                Toast.makeText(
+                    this@MainActivity,
+                    "✅ Регистрация токенов запущена. Проверьте логи.",
+                    Toast.LENGTH_LONG
+                ).show()
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "❌ Ошибка: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+                Log.e("MainActivity", "Ошибка регистрации токенов", e)
+            }
         }
     }
 
