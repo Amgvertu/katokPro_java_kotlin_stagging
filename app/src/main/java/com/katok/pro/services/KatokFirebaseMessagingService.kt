@@ -16,6 +16,7 @@ import com.katok.pro.model.NetworkResult
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.util.SecurePreferences
 import com.katok.pro.util.TokenManager
+import com.katok.pro.util.WakeUpManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,9 +63,8 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
 
         when (type) {
             "WAKE_UP" -> {
-                // ⚠️ Клиенту не нужно WAKE_UP - это для SMS-шлюза
-                // Просто игнорируем или логируем
-                Log.d(TAG, "⏳ WAKE_UP получен (игнорируем на клиенте)")
+                Log.d(TAG, "⏳ WAKE_UP получен (FCM)")
+                WakeUpManager(this).handleWakeUp()
             }
             "NEW_NOTIFICATION" -> {
                 val title = data["title"]
@@ -74,10 +74,12 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
                 showFcmNotification(title, body, notificationType, entityId)
             }
             "REAL" -> {
-                // Обычное уведомление
                 val title = data["title"]
                 val body = data["body"]
                 showFcmNotification(title, body, null, null)
+            }
+            else -> {
+                Log.d(TAG, "Неизвестный тип сообщения: $type")
             }
         }
     }

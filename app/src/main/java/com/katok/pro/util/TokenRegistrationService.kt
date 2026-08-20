@@ -4,18 +4,19 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import com.katok.pro.model.NetworkResult
+import com.katok.pro.network.NetworkUtils
 import com.katok.pro.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.suspendCancellableCoroutine
-import ru.rustore.sdk.pushclient.RuStorePushClient
-import kotlin.coroutines.resume
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import ru.rustore.sdk.pushclient.RuStorePushClient
 
 class TokenRegistrationService(private val context: Context) {
 
     companion object {
         private const val TAG = "TokenRegistration"
+        private const val MAX_ATTEMPTS = 3
+        private const val RETRY_DELAY_MS = 2000L
     }
 
     /**
@@ -24,6 +25,12 @@ class TokenRegistrationService(private val context: Context) {
      */
     suspend fun registerAllTokens() {
         Log.d(TAG, "🚀 Начинаем регистрацию всех push-токенов")
+
+        // Проверяем интернет
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            Log.w(TAG, "⚠️ Нет интернета, токены будут зарегистрированы позже")
+            return
+        }
 
         // 1. FCM токен
         registerFcmToken()
@@ -51,10 +58,7 @@ class TokenRegistrationService(private val context: Context) {
 
     private suspend fun registerHmsToken() {
         try {
-            // Проверяем, есть ли HMS на устройстве
             if (isHuaweiDevice()) {
-                // HMS токен получается в KatokHmsMessageService.onNewToken
-                // Здесь мы просто проверяем, что он уже зарегистрирован
                 val token = SecurePreferences.getInstance(context).getHmsToken()
                 if (token != null && token.isNotEmpty()) {
                     Log.d(TAG, "📱 HMS токен найден: ${token.take(20)}...")
@@ -71,13 +75,13 @@ class TokenRegistrationService(private val context: Context) {
     private suspend fun registerRuStoreToken() {
         try {
             if (isRuStoreAvailable()) {
-                Log.d(TAG, "📱 RuStore доступен, проверяем сохранённый токен")
-                val token = SecurePreferences.getInstance(context).getRuStoreToken()
+                val token = getRuStoreToken()
                 if (token != null && token.isNotEmpty()) {
-                    Log.d(TAG, "📱 RuStore токен найден в хранилище: ${token.take(20)}...")
+                    Log.d(TAG, "📱 RuStore токен получен: ${token.take(20)}...")
+                    SecurePreferences.getInstance(context).saveRuStoreToken(token)
                     sendTokenToServer(token, "RUSTORE")
                 } else {
-                    Log.w(TAG, "⚠️ RuStore токен не найден в хранилище, он будет получен позже через onNewToken")
+                    Log.w(TAG, "⚠️ RuStore токен не получен")
                 }
             } else {
                 Log.w(TAG, "⚠️ RuStore недоступен на устройстве")
@@ -87,14 +91,41 @@ class TokenRegistrationService(private val context: Context) {
         }
     }
 
+    /**
+     * Явный запрос токена у RuStore SDK
+     * В версии 7.3.0 getToken() возвращает Task<String>
+     */
+    private suspend fun getRuStoreToken(): String? {
+        return try {
+            val task = RuStorePushClient.getToken()
+            val token = task.await()
+            if (token != null && token.isNotEmpty()) {
+                Log.d(TAG, "✅ RuStore токен получен: ${token.take(20)}...")
+                token
+            } else {
+                Log.w(TAG, "⚠️ RuStore токен пустой")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Ошибка получения RuStore токена", e)
+            null
+        }
+    }
+
     private suspend fun sendTokenToServer(token: String, platform: String) {
         val userRepository = UserRepository(context)
         var attempts = 0
-        val maxAttempts = 3
         var success = false
-        while (attempts < maxAttempts && !success) {
+
+        while (attempts < MAX_ATTEMPTS && !success) {
             attempts++
             try {
+                if (!NetworkUtils.isNetworkAvailable(context)) {
+                    Log.w(TAG, "⚠️ Нет интернета, попытка $attempts отложена")
+                    delay(RETRY_DELAY_MS)
+                    continue
+                }
+
                 val result = userRepository.registerPushToken(token, platform)
                 when (result) {
                     is NetworkResult.Success -> {
@@ -103,22 +134,22 @@ class TokenRegistrationService(private val context: Context) {
                     }
                     is NetworkResult.Error -> {
                         Log.e(TAG, "❌ Ошибка регистрации $platform токена (попытка $attempts): ${result.message}")
-                        if (attempts < maxAttempts) {
-                            // ждём 1 секунду перед повтором
-                            delay(1000)
+                        if (attempts < MAX_ATTEMPTS) {
+                            delay(RETRY_DELAY_MS)
                         }
                     }
                     else -> {}
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Исключение при регистрации $platform токена (попытка $attempts): ${e.message}")
-                if (attempts < maxAttempts) {
-                    delay(1000)
+                if (attempts < MAX_ATTEMPTS) {
+                    delay(RETRY_DELAY_MS)
                 }
             }
         }
+
         if (!success) {
-            Log.e(TAG, "❌ Не удалось зарегистрировать $platform токен после $maxAttempts попыток")
+            Log.e(TAG, "❌ Не удалось зарегистрировать $platform токен после $MAX_ATTEMPTS попыток")
         }
     }
 
@@ -141,8 +172,8 @@ class TokenRegistrationService(private val context: Context) {
     }
 }
 
-// Extension function для ожидания FCM токена
-suspend fun com.google.android.gms.tasks.Task<String>.await(): String? {
+// Универсальная extension для ожидания Task (работает для любых типов)
+suspend fun <T> com.google.android.gms.tasks.Task<T>.await(): T? {
     return withContext(Dispatchers.IO) {
         try {
             com.google.android.gms.tasks.Tasks.await(this@await)

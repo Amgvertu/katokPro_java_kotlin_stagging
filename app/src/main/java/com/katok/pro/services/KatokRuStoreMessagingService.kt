@@ -14,6 +14,7 @@ import com.katok.pro.model.NetworkResult
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.util.SecurePreferences
 import com.katok.pro.util.TokenManager
+import com.katok.pro.util.WakeUpManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,26 +40,24 @@ class KatokRuStoreMessagingService : RuStoreMessagingService() {
         super.onMessageReceived(message)
         Log.d(TAG, "📩 RuStore message received")
 
-        // Получаем данные из сообщения
         val dataMap = message.data
         Log.d(TAG, "Data: $dataMap")
 
-        // Извлекаем тип и другие поля
         val type = dataMap["type"]
         Log.d(TAG, "Message type: $type")
 
         when (type) {
             "WAKE_UP" -> {
-                Log.d(TAG, "🎯 WAKE_UP received, starting WebSocket")
-                val accessToken = TokenManager.getInstance(this).getAccessToken()
-                if (accessToken != null && accessToken.isNotEmpty()) {
-                    WebSocketForegroundService.start(this)
-                }
+                Log.d(TAG, "⏳ WAKE_UP получен (RuStore)")
+                WakeUpManager(this).handleWakeUp()
             }
             "REAL", "ADMIN_MESSAGE" -> {
                 val title = dataMap["title"] ?: "Новое уведомление"
                 val body = dataMap["body"] ?: ""
                 showNotification(title, body)
+
+                val intent = Intent("REFRESH_UNREAD_COUNT")
+                sendBroadcast(intent)
             }
             else -> {
                 Log.d(TAG, "Unknown message type: $type")

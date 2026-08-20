@@ -18,6 +18,7 @@ import com.katok.pro.model.NetworkResult
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.util.SecurePreferences
 import com.katok.pro.util.TokenManager
+import com.katok.pro.util.WakeUpManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -75,19 +76,17 @@ class KatokHmsMessageService : HmsMessageService() {
     private fun handleDataMessage(data: Map<String, String>) {
         val type = data["type"]
         Log.d(TAG, "Handling message type: $type")
+
         when (type) {
             "WAKE_UP" -> {
-                // Игнорируем на клиенте
-                Log.d(TAG, "⏳ WAKE_UP получен (игнорируем)")
+                Log.d(TAG, "⏳ WAKE_UP получен (HMS)")
+                WakeUpManager(this).handleWakeUp()
             }
             "REAL", "ADMIN_MESSAGE", "NEW_NOTIFICATION" -> {
                 val title = data["title"] ?: "Новое уведомление"
                 val body = data["body"] ?: ""
-
-                // Показываем уведомление
                 showHmsNotification(title, body)
 
-                // ========== НОВОЕ: Обновляем счетчик непрочитанных ==========
                 val intent = Intent("REFRESH_UNREAD_COUNT")
                 intent.putExtra("type", "HMS")
                 sendBroadcast(intent)
