@@ -43,6 +43,7 @@ class TokenRegistrationService(private val context: Context) {
     }
 
     private suspend fun registerFcmToken() {
+        Log.d("PushDebug", "🔵 Начинаем регистрацию FCM-токена")
         try {
             val token = FirebaseMessaging.getInstance().token.await()
             if (token != null && token.isNotEmpty()) {
@@ -57,6 +58,7 @@ class TokenRegistrationService(private val context: Context) {
     }
 
     private suspend fun registerHmsToken() {
+        Log.d("PushDebug", "🔵 Начинаем регистрацию HMS-токена")
         try {
             if (isHuaweiDevice()) {
                 val token = SecurePreferences.getInstance(context).getHmsToken()
@@ -73,6 +75,7 @@ class TokenRegistrationService(private val context: Context) {
     }
 
     private suspend fun registerRuStoreToken() {
+        Log.d("PushDebug", "🔵 Начинаем регистрацию Rustore-токена")
         try {
             if (isRuStoreAvailable()) {
                 val token = getRuStoreToken()

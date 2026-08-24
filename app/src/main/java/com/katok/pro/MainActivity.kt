@@ -365,6 +365,7 @@ class MainActivity : AppCompatActivity() {
 
             try {
                 val tokenRegistrationService = TokenRegistrationService(this@MainActivity)
+                Log.d("PushDebug", "🚀 Начинаем регистрацию всех push-токенов после входа")
                 tokenRegistrationService.registerAllTokens()
                 Toast.makeText(
                     this@MainActivity,

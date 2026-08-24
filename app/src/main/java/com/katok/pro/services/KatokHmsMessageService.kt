@@ -33,18 +33,23 @@ class KatokHmsMessageService : HmsMessageService() {
     override fun onNewToken(token: String?) {
         super.onNewToken(token)
         if (token != null) {
+            Log.d("PushDebug", "🔥 HMS: onNewToken вызван, токен: ${token.take(20)}...")
             Log.d(TAG, "🔥 New HMS token: $token")
-            // Сохраняем локально
             SecurePreferences.getInstance(this).saveHmsToken(token)
-            // Отправляем на сервер
             sendTokenToServer(token)
+        } else {
+            Log.w("PushDebug", "⚠️ HMS: onNewToken получил null")
         }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
         super.onMessageReceived(remoteMessage)
-        if (remoteMessage == null) return
-        Log.d(TAG, "📩 HMS message received")
+        if (remoteMessage == null) {
+            Log.w("PushDebug", "⚠️ HMS: remoteMessage is null")
+            return
+        }
+        Log.d("PushDebug", "📩 HMS: onMessageReceived вызван")
+        Log.d("PushDebug", "📩 Данные: ${remoteMessage.data}")
 
         // Получаем данные как строку JSON и парсим в Map
         val dataString = remoteMessage.data
@@ -56,6 +61,9 @@ class KatokHmsMessageService : HmsMessageService() {
         }
 
         val notification = remoteMessage.notification
+        remoteMessage.notification?.let {
+            Log.d("PushDebug", "🔔 Заголовок: ${it.title}, тело: ${it.body}")
+        }
         if (notification != null) {
             Log.d(TAG, "Notification payload: ${notification.title}")
             showHmsNotification(notification.title, notification.body)

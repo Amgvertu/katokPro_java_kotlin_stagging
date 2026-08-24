@@ -36,15 +36,16 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d("PushDebug", "🔥 FCM: onNewToken вызван, токен: ${token.take(20)}...")
         Log.d(TAG, "🔥 New FCM token: $token")
-
         saveTokenLocally(token)
         sendTokenToServer(token)
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.d(TAG, "📩 FCM message received")
+        Log.d("PushDebug", "📩 FCM: onMessageReceived вызван")
+        Log.d("PushDebug", "📩 Данные: ${remoteMessage.data}")
 
         val data = remoteMessage.data
         if (data.isNotEmpty()) {
@@ -53,7 +54,7 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         remoteMessage.notification?.let { notification ->
-            Log.d(TAG, "Notification payload: ${notification.title}")
+            Log.d("PushDebug", "🔔 Заголовок: ${notification.title}, тело: ${notification.body}")
             handleNotificationMessage(notification)
         }
     }

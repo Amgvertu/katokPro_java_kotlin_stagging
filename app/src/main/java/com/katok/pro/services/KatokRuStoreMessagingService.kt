@@ -29,17 +29,17 @@ class KatokRuStoreMessagingService : RuStoreMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d("PushDebug", "🔥 RuStore: onNewToken вызван, токен: ${token.take(20)}...")
         Log.d(TAG, "🔥 New RuStore token: $token")
-        // Сохраняем локально
         SecurePreferences.getInstance(this).saveRuStoreToken(token)
-        // Отправляем на сервер
         sendTokenToServer(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
+        Log.d("PushDebug", "📩 RuStore: onMessageReceived вызван")
+        Log.d("PushDebug", "📩 Данные: ${message.data}")
         Log.d(TAG, "📩 RuStore message received")
-
         val dataMap = message.data
         Log.d(TAG, "Data: $dataMap")
 
