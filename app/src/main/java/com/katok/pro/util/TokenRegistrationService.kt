@@ -25,6 +25,7 @@ class TokenRegistrationService(private val context: Context) {
      */
     suspend fun registerAllTokens() {
         Log.d(TAG, "🚀 Начинаем регистрацию всех push-токенов")
+        Log.d("PushDebug", "🚀 registerAllTokens() called")
 
         // Проверяем интернет
         if (!NetworkUtils.isNetworkAvailable(context)) {
@@ -119,6 +120,7 @@ class TokenRegistrationService(private val context: Context) {
         val userRepository = UserRepository(context)
         var attempts = 0
         var success = false
+        Log.d("PushDebug", "📤 sendTokenToServer() called for platform $platform")
 
         while (attempts < MAX_ATTEMPTS && !success) {
             attempts++

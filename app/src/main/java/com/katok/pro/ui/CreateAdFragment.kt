@@ -968,32 +968,37 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
 
         val ad = collectFormData() ?: return
 
-        // ===== НОВАЯ ЛОГИКА: проверка на дубликаты перед отправкой =====
+        // Блокируем кнопку и показываем прогресс
+        binding.btnSubmit.isEnabled = false
+        binding.progressBar.visibility = View.VISIBLE
+
         lifecycleScope.launch {
-            binding.progressBar.visibility = View.VISIBLE
-
-            // 1. Проверяем дубликаты
-            val duplicateResult = adRepository.checkDuplicate(ad)
-            binding.progressBar.visibility = View.GONE
-
-            when (duplicateResult) {
-                is NetworkResult.Success -> {
-                    val duplicates = duplicateResult.data
-                    if (duplicates.isNotEmpty()) {
-                        // Найдены дубликаты – показываем предупреждение
-                        showDuplicateWarning(duplicates, ad)
-                        return@launch
+            try {
+                // 1. Проверяем дубликаты
+                val duplicateResult = adRepository.checkDuplicate(ad)
+                when (duplicateResult) {
+                    is NetworkResult.Success -> {
+                        val duplicates = duplicateResult.data
+                        if (duplicates.isNotEmpty()) {
+                            // Найдены дубликаты – показываем предупреждение
+                            // После выбора "Создать всё равно" будет вызван sendAdToServer
+                            showDuplicateWarning(duplicates, ad)
+                        } else {
+                            // Дубликатов нет – отправляем
+                            sendAdToServer(ad)
+                        }
                     }
-                    // Дубликатов нет – отправляем
-                    sendAdToServer(ad)
+                    is NetworkResult.Error -> {
+                        handleError(duplicateResult)
+                    }
+                    else -> {}
                 }
-                is NetworkResult.Error -> {
-                    // Ошибка при проверке дубликатов – показываем ошибку и прерываем
-                    handleError(duplicateResult)
-                }
-                else -> {
-                    // Loading или другие состояния – ничего не делаем
-                }
+            } catch (e: Exception) {
+                ToastHelper.showError(requireContext(), "Ошибка: ${e.message}")
+            } finally {
+                // Разблокируем кнопку и скрываем прогресс
+                binding.btnSubmit.isEnabled = true
+                binding.progressBar.visibility = View.GONE
             }
         }
     }

@@ -123,6 +123,7 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
                     val tokenRegistrationService = TokenRegistrationService(requireContext())
                     lifecycleScope.launch {
                         tokenRegistrationService.registerAllTokens()
+                        Log.d("PushDebug", "✅ registerAllTokens() вызван после логина")
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
