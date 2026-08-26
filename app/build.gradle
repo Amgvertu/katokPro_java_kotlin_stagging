@@ -40,6 +40,15 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('katok_pro_staging_debug.keystore')
+            storePassword 'fghvbn123rty'
+            keyAlias 'katokpro_staging_debugkey'
+            keyPassword 'fghvbn123rty'
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
