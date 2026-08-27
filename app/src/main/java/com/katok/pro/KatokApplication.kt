@@ -26,7 +26,7 @@ class KatokApplication : Application() {
         try {
             RuStorePushClient.init(
                 application = this,
-                projectId = "jl4uTL62lrP4Kx3GlhMfSMi7y6f6eY0d",
+                projectId = "YVNeuZo6gSX1LepNWR1LpdqAMhnPZ0GM",
 
             )
             Log.d("KatokApp", "✅ RuStore SDK initialized")

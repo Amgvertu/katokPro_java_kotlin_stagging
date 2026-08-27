@@ -51,6 +51,8 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
         if (data.isNotEmpty()) {
             Log.d(TAG, "Data payload: $data")
             handleDataMessage(data)
+            // Если есть data, не обрабатываем notification, чтобы избежать дублирования
+            return
         }
 
         remoteMessage.notification?.let { notification ->
