@@ -308,7 +308,7 @@ class MainViewModel @Inject constructor(
                 is NetworkResult.Success -> {
                     removeResponseFromAd(adId, responseId)
                     refreshAd(adId)
-                    NotificationRepository().notifyResponseCancelled(adId, authorId)
+                    //NotificationRepository().notifyResponseCancelled(adId, authorId)
                 }
                 is NetworkResult.Error -> _error.value = result.message
                 else -> {}
@@ -358,7 +358,7 @@ class MainViewModel @Inject constructor(
                 is NetworkResult.Success -> {
                     updateResponseStatusLocally(adId, responseId, "PENDING")
                     refreshAd(adId)
-                    NotificationRepository().notifyApprovalCancelled(adId, userId)
+                   //NotificationRepository().notifyApprovalCancelled(adId, userId)
                 }
                 is NetworkResult.Error -> _error.value = result.message
                 else -> {}

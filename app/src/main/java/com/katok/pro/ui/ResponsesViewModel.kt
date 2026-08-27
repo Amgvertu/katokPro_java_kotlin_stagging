@@ -108,7 +108,7 @@ class ResponsesViewModel @Inject constructor(
             val result = adRepository.deleteResponse(responseId)
             when (result) {
                 is NetworkResult.Success -> {
-                    NotificationRepository().notifyResponseCancelled(adId, authorId)
+                    //NotificationRepository().notifyResponseCancelled(adId, authorId)
                     loadAds()
                 }
                 is NetworkResult.Error -> _error.value = result.message
@@ -122,7 +122,7 @@ class ResponsesViewModel @Inject constructor(
             val result = adRepository.updateResponseStatus(responseId, "PENDING")
             when (result) {
                 is NetworkResult.Success -> {
-                    NotificationRepository().notifyApprovalCancelled(adId, userId)
+                    //NotificationRepository().notifyApprovalCancelled(adId, userId)
                     loadAds()
                 }
                 is NetworkResult.Error -> _error.value = result.message
