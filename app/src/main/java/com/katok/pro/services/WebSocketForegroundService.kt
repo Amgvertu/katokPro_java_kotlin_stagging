@@ -22,6 +22,10 @@ import com.katok.pro.network.WebSocketManager
 import com.katok.pro.network.WebSocketSubscriptionManager
 import com.katok.pro.util.NotificationsManager
 import com.katok.pro.util.TokenManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
 
@@ -127,61 +131,83 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
             }
 
             isConnecting = true
+            Log.d(TAG, "Starting WebSocket connection in background...")
 
-            // Полностью останавливаем старый менеджер
-            sharedWebSocketManager?.let {
-                it.disconnect()
-                sharedWebSocketManager = null
-            }
-
-            val wsUrl = ApiClient.getCurrentWebSocketUrl()
-            Log.d(TAG, "Creating new WebSocketManager for URL: $wsUrl")
-
-            sharedWebSocketManager = WebSocketManager(currentToken!!, object : WebSocketManager.Listener {
-                override fun onConnected() {
-                    synchronized(webSocketLock) {
-                        isConnecting = false
-                        isConnected = true
-                    }
-                    Log.d(TAG, "✅ WebSocket connected")
-
-                    // Восстанавливаем отложенные подписки
-                    if (pendingAdIds.isNotEmpty()) {
-                        Log.d(TAG, "Restoring ${pendingAdIds.size} deferred subscriptions")
-                        pendingAdIds.forEach { adId ->
-                            sharedWebSocketManager?.subscribeToAd(adId)
+            // ЗАПУСКАЕМ ПОДКЛЮЧЕНИЕ В ФОНОВОМ ПОТОКЕ
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    // Полностью останавливаем старый менеджер
+                    withContext(Dispatchers.Main) {
+                        sharedWebSocketManager?.let {
+                            it.disconnect()
+                            sharedWebSocketManager = null
                         }
-                        pendingAdIds.clear()
                     }
-                    sharedWebSocketManager?.subscribeToAds()
-                    sharedWebSocketManager?.subscribeToNotifications()
-                }
 
-                override fun onDisconnected() {
+                    val wsUrl = ApiClient.getCurrentWebSocketUrl()
+                    Log.d(TAG, "Creating new WebSocketManager for URL: $wsUrl")
+
+                    // Создаём WebSocketManager (это может занять время, поэтому в фоне)
+                    val manager = WebSocketManager(currentToken!!, object : WebSocketManager.Listener {
+                        override fun onConnected() {
+                            synchronized(webSocketLock) {
+                                isConnecting = false
+                                isConnected = true
+                            }
+                            Log.d(TAG, "✅ WebSocket connected")
+
+                            // Восстанавливаем отложенные подписки
+                            if (pendingAdIds.isNotEmpty()) {
+                                Log.d(TAG, "Restoring ${pendingAdIds.size} deferred subscriptions")
+                                pendingAdIds.forEach { adId ->
+                                    sharedWebSocketManager?.subscribeToAd(adId)
+                                }
+                                pendingAdIds.clear()
+                            }
+                            sharedWebSocketManager?.subscribeToAds()
+                            sharedWebSocketManager?.subscribeToNotifications()
+                        }
+
+                        override fun onDisconnected() {
+                            synchronized(webSocketLock) {
+                                isConnecting = false
+                                isConnected = false
+                            }
+                            Log.d(TAG, "WebSocket disconnected, scheduling reconnect")
+                            scheduleReconnect()
+                        }
+
+                        override fun onNotificationReceived(jsonMessage: String) {
+                            Log.d(TAG, "onNotificationReceived in service: $jsonMessage")
+                            showSystemNotification(jsonMessage)
+                        }
+
+                        override fun onError(error: Throwable) {
+                            synchronized(webSocketLock) {
+                                isConnecting = false
+                                isConnected = false
+                            }
+                            Log.e(TAG, "WebSocket error", error)
+                            scheduleReconnect()
+                        }
+                    })
+
+                    // Сохраняем менеджер и подключаемся
+                    withContext(Dispatchers.Main) {
+                        sharedWebSocketManager = manager
+                        WebSocketSubscriptionManager.setWebSocketManager(manager)
+                        manager.connect()
+                    }
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error during WebSocket creation", e)
                     synchronized(webSocketLock) {
                         isConnecting = false
                         isConnected = false
                     }
-                    Log.d(TAG, "WebSocket disconnected, scheduling reconnect")
                     scheduleReconnect()
                 }
-
-                override fun onNotificationReceived(jsonMessage: String) {
-                    Log.d(TAG, "onNotificationReceived in service: $jsonMessage")
-                    showSystemNotification(jsonMessage)
-                }
-
-                override fun onError(error: Throwable) {
-                    synchronized(webSocketLock) {
-                        isConnecting = false
-                        isConnected = false
-                    }
-                    Log.e(TAG, "WebSocket error", error)
-                    scheduleReconnect()
-                }
-            })
-            sharedWebSocketManager!!.connect()
-            WebSocketSubscriptionManager.setWebSocketManager(sharedWebSocketManager)
+            }
         }
     }
 
@@ -221,6 +247,7 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
             stopSelf()
             return START_NOT_STICKY
         }
+
         when (intent?.action) {
             "SUBSCRIBE_TO_ADS" -> {
                 val adIds = intent.getStringArrayListExtra("ad_ids") ?: emptyList()
@@ -231,7 +258,6 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
                         }
                         Log.d(TAG, "Subscribed to ${adIds.size} ads")
                     } else {
-                        // Если не подключены, сохраняем для будущей подписки
                         pendingAdIds.addAll(adIds)
                         Log.d(TAG, "Deferred subscription for ${adIds.size} ads")
                     }
@@ -239,9 +265,11 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
             }
         }
 
+        // Запускаем подключение (если ещё не подключено) в фоне
         synchronized(webSocketLock) {
             if (sharedWebSocketManager == null || !isConnected) {
                 currentToken = token
+                // Вызов connectWebSocket() теперь сам запускает корутину
                 connectWebSocket()
             }
         }

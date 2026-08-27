@@ -59,12 +59,12 @@ class ApiClient private constructor() {
         private const val REMOTE_BASE_URL = "https://varamy.online/api-staging/"
 
         //Первый подключается глобальный адрес
-        @Volatile
-        private var currentBaseUrl: String = REMOTE_BASE_URL
+        /*@Volatile
+        private var currentBaseUrl: String = REMOTE_BASE_URL*/
 
         //Первый подключается локальный адрес
-        /*@Volatile
-        private var currentBaseUrl: String = LOCAL_BASE_URL*/
+        @Volatile
+        private var currentBaseUrl: String = LOCAL_BASE_URL
 
         @Volatile
         private var httpClient: OkHttpClient? = null

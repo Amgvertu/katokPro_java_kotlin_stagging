@@ -226,6 +226,9 @@ class WebSocketManager(
     }
 
     fun connect() {
+        if (stompClient == null) {
+            initStompClient()
+        }
         if (stompClient == null) return
         synchronized(this) {
             if (isConnected) {
