@@ -491,4 +491,7 @@ interface ApiService {
     @POST("push/register")
     suspend fun registerPushToken(@Body request: PushTokenRequest): Response<ApiResponse<Void>>
 
+    @POST("user/status")
+    suspend fun setUserStatus(@Query("active") active: Boolean): Response<ApiResponse<Void>>
+
 }

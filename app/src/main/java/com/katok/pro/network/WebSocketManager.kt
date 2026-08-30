@@ -531,5 +531,13 @@ class WebSocketManager(
         adsTopicDisposable = null
     }
 
+    fun sendStatus(active: Boolean) {
+        stompClient?.send("/app/user/status", """{"active": $active}""")
+            ?.subscribe(
+                { Log.d("WebSocketManager", "✅ Статус отправлен: $active") },
+                { error -> Log.e("WebSocketManager", "❌ Ошибка отправки статуса", error) }
+            )
+    }
+
 
 }

@@ -479,11 +479,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        invalidateOptionsMenu() // пересоздаёт меню при возврате на активность
-    }
-
     private fun navigateToDestination(destinationId: Int) {
         // Если пытаемся перейти к созданию объявления, проверяем профиль
         if (destinationId == R.id.navigation_create) {
@@ -562,6 +557,53 @@ class MainActivity : AppCompatActivity() {
 
     fun resetTokenCheck() {
         isTokenChecked = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "⏹️ onPause: отправляем статус inactive")
+        lifecycleScope.launch {
+            try {
+                val apiService = ApiClient.getApiService()
+                sendUserStatus(false)
+                Log.d("MainActivity", "✅ Статус inactive отправлен на сервер")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ Ошибка отправки статуса inactive", e)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("MainActivity", "▶️ onResume: отправляем статус active")
+        lifecycleScope.launch {
+            try {
+                val apiService = ApiClient.getApiService()
+                sendUserStatus(true)
+                Log.d("MainActivity", "✅ Статус active отправлен на сервер")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ Ошибка отправки статуса active", e)
+            }
+        }
+    }
+
+    private fun sendUserStatus(active: Boolean) {
+        val wsManager = WebSocketForegroundService.getInstance()?.getWebSocketManager()
+        if (wsManager != null && wsManager.isConnected()) {
+            wsManager.sendStatus(active)
+            Log.d("MainActivity", "✅ Статус $active отправлен через WebSocket")
+        } else {
+            // fallback: если WebSocket ещё не подключён, отправляем через HTTP
+            lifecycleScope.launch {
+                try {
+                    val apiService = ApiClient.getApiService()
+                    apiService.setUserStatus(active)
+                    Log.d("MainActivity", "✅ Статус $active отправлен через HTTP (fallback)")
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "❌ Не удалось отправить статус", e)
+                }
+            }
+        }
     }
 
 }
