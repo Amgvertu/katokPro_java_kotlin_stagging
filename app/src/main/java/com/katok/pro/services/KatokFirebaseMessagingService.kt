@@ -94,6 +94,7 @@ class KatokFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun showFcmNotification(title: String?, body: String?, type: String?, entityId: String?) {
+        Log.d("PushDebug", "🔔 Показываем уведомление: title=$title, body=$body")
         var notificationTitle = title
         var notificationBody = body
         if (notificationTitle == null) notificationTitle = "Новое уведомление"

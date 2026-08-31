@@ -66,6 +66,7 @@ class KatokRuStoreMessagingService : RuStoreMessagingService() {
     }
 
     private fun showNotification(title: String, body: String) {
+        Log.d("PushDebug", "🔔 Показываем уведомление: title=$title, body=$body")
         createNotificationChannel()
 
         val intent = Intent(this, MainActivity::class.java).apply {

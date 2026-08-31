@@ -107,6 +107,7 @@ class KatokHmsMessageService : HmsMessageService() {
     }
 
     private fun showHmsNotification(title: String?, body: String?) {
+        Log.d("PushDebug", "🔔 Показываем уведомление: title=$title, body=$body")
         val notificationTitle = title ?: "Новое уведомление"
         val notificationBody = body ?: ""
 

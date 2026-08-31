@@ -88,6 +88,12 @@ class MainActivity : AppCompatActivity() {
         resources.updateConfiguration(config, resources.displayMetrics)
 
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
+            }
+        }
+
         Log.d("MainActivity", "onCreate START")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -99,12 +105,6 @@ class MainActivity : AppCompatActivity() {
 
         sessionManager = SessionManager(this)
         tokenManager = TokenManager.getInstance(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
-            }
-        }
 
         val filter = IntentFilter("REFRESH_UNREAD_COUNT")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

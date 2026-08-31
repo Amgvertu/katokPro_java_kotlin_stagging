@@ -66,6 +66,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
     private val selectedRinks = mutableListOf<Rink>()
     private var isMultiRinkSelection = false
     private var isRestoring = false
+    private var isSubmitting = false
     private var formRestored = false
     private var prefilledLevel: String? = null
     private var webSocketManager: WebSocketManager? = null
@@ -907,6 +908,8 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
     }
 
     private fun submitAd() {
+        if (isSubmitting) return
+        isSubmitting = true
         if (binding.spinnerCategory.selectedItemPosition == 0) {
             ToastHelper.showError(requireContext(), "Выберите категорию")
             return
@@ -999,6 +1002,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
                 // Разблокируем кнопку и скрываем прогресс
                 binding.btnSubmit.isEnabled = true
                 binding.progressBar.visibility = View.GONE
+                isSubmitting = false
             }
         }
     }
