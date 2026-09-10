@@ -568,12 +568,17 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
                 selectedRinks.add(rinksList[which])
             }
         }
-        builder.setPositiveButton("OK") { _, _ -> updateSelectedRinksDisplay() }
+        builder.setPositiveButton("OK") { _, _ ->
+            if (isAdded && _binding != null) {
+                updateSelectedRinksDisplay()
+            }
+        }
         builder.setNegativeButton("Отмена", null)
         builder.show()
     }
 
     private fun updateSelectedRinksDisplay() {
+        if (_binding == null) return
         if (selectedRinks.isEmpty()) {
             binding.etRink.setText(null)
             binding.layoutSelectedRinks.visibility = View.GONE
@@ -908,33 +913,31 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
     }
 
     private fun submitAd() {
+        // 1. Защита от повторного клика — СНАЧАЛА
         if (isSubmitting) return
-        isSubmitting = true
+
+        // 2. Валидация — до установки флага
         if (binding.spinnerCategory.selectedItemPosition == 0) {
-            ToastHelper.showError(requireContext(), "Выберите категорию")
-            return
+            ToastHelper.showError(requireContext(), "Выберите категорию"); return
         }
         if (binding.spinnerType.selectedItemPosition == 0) {
-            ToastHelper.showError(requireContext(), "Выберите тип объявления")
-            return
+            ToastHelper.showError(requireContext(), "Выберите тип объявления"); return
         }
         if (selectedCityId == null || selectedCityId == 0) {
-            ToastHelper.showError(requireContext(), "Выберите город")
-            return
+            ToastHelper.showError(requireContext(), "Выберите город"); return
         }
-        val date = binding.etDate.text.toString()
-        if (date.isEmpty()) {
-            ToastHelper.showError(requireContext(), "Укажите дату")
-            return
+        if (binding.etDate.text.toString().isEmpty()) {
+            ToastHelper.showError(requireContext(), "Укажите дату"); return
         }
         if (!anyTimeSelected) {
-            if (binding.layoutTimeSingle.visibility == View.VISIBLE && binding.etTimeStart.text.toString().isEmpty()) {
-                ToastHelper.showError(requireContext(), "Укажите время")
-                return
+            if (binding.layoutTimeSingle.visibility == View.VISIBLE &&
+                binding.etTimeStart.text.toString().isEmpty()) {
+                ToastHelper.showError(requireContext(), "Укажите время"); return
             }
-            if (binding.layoutTimeRange.visibility == View.VISIBLE && (binding.etTimeFrom.text.toString().isEmpty() || binding.etTimeTo.text.toString().isEmpty())) {
-                ToastHelper.showError(requireContext(), "Укажите время начала и окончания")
-                return
+            if (binding.layoutTimeRange.visibility == View.VISIBLE &&
+                (binding.etTimeFrom.text.toString().isEmpty() ||
+                        binding.etTimeTo.text.toString().isEmpty())) {
+                ToastHelper.showError(requireContext(), "Укажите время начала и окончания"); return
             }
         }
         if (binding.layoutLevelGroup.visibility == View.VISIBLE) {
@@ -943,67 +946,101 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
                 binding.cbLevelE, binding.cbLevelF, binding.cbLevelG, binding.cbLevelH
             ).any { it.isChecked }
             if (!levelSelected) {
-                ToastHelper.showError(requireContext(), "Выберите хотя бы один уровень")
-                return
+                ToastHelper.showError(requireContext(), "Выберите хотя бы один уровень"); return
             }
         }
-        if (!(selectedType == 2 && selectedSubType == 2) && binding.etPayment.text.toString().trim().isEmpty()) {
-            ToastHelper.showError(requireContext(), "Укажите оплату")
-            return
+        if (!(selectedType == 2 && selectedSubType == 2) &&
+            binding.etPayment.text.toString().trim().isEmpty()) {
+            ToastHelper.showError(requireContext(), "Укажите оплату"); return
         }
         if (selectedType == 1) {
             if (selectedSubType == 1 && binding.layoutGoalieCount.visibility != View.VISIBLE) {
-                ToastHelper.showError(requireContext(), "Укажите количество вратарей")
-                return
+                ToastHelper.showError(requireContext(), "Укажите количество вратарей"); return
             } else if (selectedSubType == 2) {
-                val defenders = binding.etDefenders.text.toString().toIntOrNull() ?: 0
-                val forwards = binding.etForwards.text.toString().toIntOrNull() ?: 0
-                if (defenders == 0 && forwards == 0) {
-                    ToastHelper.showError(requireContext(), "Укажите количество защитников или нападающих")
-                    return
+                val d = binding.etDefenders.text.toString().toIntOrNull() ?: 0
+                val f = binding.etForwards.text.toString().toIntOrNull() ?: 0
+                if (d == 0 && f == 0) {
+                    ToastHelper.showError(requireContext(), "Укажите количество защитников или нападающих"); return
                 }
             }
         }
         if (selectedRinks.isEmpty()) {
-            ToastHelper.showError(requireContext(), "Выберите хотя бы один ЛДС")
-            return
+            ToastHelper.showError(requireContext(), "Выберите хотя бы один ЛДС"); return
         }
 
         val ad = collectFormData() ?: return
 
-        // Блокируем кнопку и показываем прогресс
+        // 3. Только теперь блокируем UI
+        isSubmitting = true
         binding.btnSubmit.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             try {
-                // 1. Проверяем дубликаты
+                // --- Проверка дубликатов ---
                 val duplicateResult = adRepository.checkDuplicate(ad)
                 when (duplicateResult) {
                     is NetworkResult.Success -> {
                         val duplicates = duplicateResult.data
                         if (duplicates.isNotEmpty()) {
-                            // Найдены дубликаты – показываем предупреждение
-                            // После выбора "Создать всё равно" будет вызван sendAdToServer
+                            // Отдаём управление пользователю, НО не сбрасываем isSubmitting,
+                            // пока он не примет решение (см. showDuplicateWarning)
                             showDuplicateWarning(duplicates, ad)
-                        } else {
-                            // Дубликатов нет – отправляем
-                            sendAdToServer(ad)
+                            return@launch   // НЕ идём в finally, ждём решения пользователя
                         }
                     }
                     is NetworkResult.Error -> {
                         handleError(duplicateResult)
+                        return@launch
                     }
-                    else -> {}
+                    else -> return@launch
                 }
-            } catch (e: Exception) {
-                ToastHelper.showError(requireContext(), "Ошибка: ${e.message}")
+
+                // --- Создание/обновление ---
+                sendAdToServerAndWait(ad)
             } finally {
-                // Разблокируем кнопку и скрываем прогресс
+                // Эта ветка finally выполнится только если мы дошли сюда,
+                // т.е. либо после успешной отправки, либо после ошибок.
+                // При showDuplicateWarning мы делаем return@launch — сюда не попадаем,
+                // и isSubmitting/кнопка остаются заблокированными до выбора пользователя.
                 binding.btnSubmit.isEnabled = true
                 binding.progressBar.visibility = View.GONE
                 isSubmitting = false
             }
+        }
+    }
+
+    private suspend fun sendAdToServerAndWait(ad: Ad) {
+        val result = if (adId == null) {
+            adRepository.createAd(ad)
+        } else {
+            adRepository.updateAd(adId!!, ad)
+        }
+
+        when (result) {
+            is NetworkResult.Success -> {
+                val createdAd = result.data
+                val newAdId = createdAd.id.toString()
+
+                ToastHelper.showSuccess(
+                    requireContext(),
+                    if (adId == null) "Объявление создано" else "Объявление обновлено"
+                )
+
+                resetForm()
+                if (adId == null) {
+                    formPersistence.clear()
+                    formRestored = false
+                }
+                webSocketManager?.subscribeToAd(newAdId)
+                adId = newAdId
+
+                val navController = NavHostFragment.findNavController(this@CreateAdFragment)
+                navController.popBackStack()
+                navController.navigate(R.id.navigation_my_ads)
+            }
+            is NetworkResult.Error -> handleError(result)
+            else -> {}
         }
     }
 
@@ -1077,6 +1114,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
 
     override fun onPause() {
         super.onPause()
+        if (_binding == null) return
         adId?.let { webSocketManager?.unsubscribeFromAd(it) }
         if (adId == null) {
             val current = collectFormData()
@@ -1140,12 +1178,8 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
             duplicates.forEachIndexed { index, dup ->
                 append("${index + 1}. ${dup.cityName ?: "Город не указан"}, ")
                 append("ЛДС: ${dup.rinkName ?: "не указан"}\n")
-                dup.startTime?.let {
-                    append("   Дата: ${formatDateTimeShort(it)}\n")
-                }
-                dup.status?.let {
-                    append("   Статус: ${translateStatus(it)}\n")
-                }
+                dup.startTime?.let { append("   Дата: ${formatDateTimeShort(it)}\n") }
+                dup.status?.let { append("   Статус: ${translateStatus(it)}\n") }
                 append("\n")
             }
             append("Вы уверены, что хотите создать ещё одно такое объявление?")
@@ -1154,13 +1188,29 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
         AlertDialog.Builder(requireContext())
             .setTitle("Обнаружены дубликаты")
             .setMessage(message)
+            .setCancelable(false)
             .setPositiveButton("Создать всё равно") { _, _ ->
-                sendAdToServer(currentAd)
+                lifecycleScope.launch {
+                    try {
+                        sendAdToServerAndWait(currentAd)
+                    } finally {
+                        binding.btnSubmit.isEnabled = true
+                        binding.progressBar.visibility = View.GONE
+                        isSubmitting = false
+                    }
+                }
             }
             .setNegativeButton("Отмена") { _, _ ->
+                // Разблокируем UI, т.к. submitAd сделал return@launch и finally не сработает
+                binding.btnSubmit.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+                isSubmitting = false
                 ToastHelper.showInfo(requireContext(), "Публикация отменена")
             }
             .setNeutralButton("Редактировать") { _, _ ->
+                binding.btnSubmit.isEnabled = true
+                binding.progressBar.visibility = View.GONE
+                isSubmitting = false
                 ToastHelper.showInfo(requireContext(), "Отредактируйте объявление")
             }
             .show()

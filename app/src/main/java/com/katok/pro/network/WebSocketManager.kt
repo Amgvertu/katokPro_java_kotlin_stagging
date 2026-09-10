@@ -24,6 +24,9 @@ import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompHeader
 import ua.naiksoftware.stomp.dto.StompMessage
+import com.katok.pro.util.SessionManager
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class WebSocketManager(
     private var authToken: String,
@@ -291,16 +294,23 @@ class WebSocketManager(
             Log.w(TAG, "Cannot subscribe to ad $adId: stompClient=$stompClient, isConnected=$isConnected")
             return
         }
+
+        // ⚠️ Удаляем старые подписки, если они есть
+        adSubscriptions.remove("${adId}_status")?.let {
+            if (!it.isDisposed) it.dispose()
+        }
+        adSubscriptions.remove("${adId}_responses")?.let {
+            if (!it.isDisposed) it.dispose()
+        }
+
         val statusTopic = "/topic/ad/$adId/status"
         val responsesTopic = "/topic/ad/$adId/responses"
-        Log.d(TAG, "Subscribing to $statusTopic and $responsesTopic")
+
         val statusDisposable = stompClient!!.topic(statusTopic)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { message ->
-                    Log.d(TAG, "📩 RAW MESSAGE from /topic/ads: ${message.payload}")
-                    handleAdEvent(adId, message.payload) },
+                { message -> handleAdEvent(adId, message.payload) },
                 { throwable -> Log.e(TAG, "Status topic error", throwable) }
             )
         compositeDisposable.add(statusDisposable)
@@ -310,15 +320,13 @@ class WebSocketManager(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { message ->
-                    Log.d(TAG, "📩 RAW MESSAGE from /topic/ads: ${message.payload}")
-                    handleAdEvent(adId, message.payload) },
+                { message -> handleAdEvent(adId, message.payload) },
                 { throwable -> Log.e(TAG, "Responses topic error", throwable) }
             )
         compositeDisposable.add(responsesDisposable)
         adSubscriptions["${adId}_responses"] = responsesDisposable
-        Log.d(TAG, "Subscribing to $statusTopic and $responsesTopic")
-        Log.d(TAG, "Subscribing to ad $adId, status topic: /topic/ad/$adId/status, responses: /topic/ad/$adId/responses")
+
+        Log.d(TAG, "Subscribed to ad $adId (status + responses)")
     }
 
     fun unsubscribeFromAd(adId: String) {
@@ -337,9 +345,35 @@ class WebSocketManager(
             val typeStr = obj.get("type")?.asString ?: return
             Log.d(TAG, "handleAdEvent: typeStr = $typeStr, listener = $listener")
             if (typeStr == "NEW_AD") {
-                Log.d(TAG, "📩 NEW_AD detected, calling onNotificationReceived")
-                listener?.onNotificationReceived(json)
-                Log.d(TAG, "📩 onNotificationReceived called")
+                Log.d(TAG, "📩 NEW_AD detected, проверяем автора")
+                // Запускаем проверку в фоне, чтобы не блокировать главный поток
+                CoroutineScope(Dispatchers.IO).launch {
+                    // 1. Достаём ID текущего пользователя из сессии
+                    val context = ApiClient.getAppContext()
+                    val currentUserId = context?.let { SessionManager(it).getUserId() }
+
+                    // 2. Достаём автора объявления из payload
+                    val payloadElement = obj.get("payload")
+                    val authorId = try {
+                        if (payloadElement != null && !payloadElement.isJsonNull) {
+                            gson.fromJson(payloadElement, Ad::class.java)?.authorId
+                        } else null
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Не удалось распарсить payload объявления", e)
+                        null
+                    }
+
+                    // 3. Сравниваем. Если автор == текущий пользователь — пуш не показываем
+                    if (authorId != null && currentUserId != null && authorId == currentUserId) {
+                        Log.d(TAG, "🚫 NEW_AD от текущего пользователя ($authorId) — уведомление не показываем")
+                        return@launch
+                    }
+
+                    // 4. Иначе — показываем уведомление как обычно
+                    withContext(Dispatchers.Main) {
+                        listener?.onNotificationReceived(json)
+                    }
+                }
                 return
             }
             val entityId = when {
@@ -404,6 +438,12 @@ class WebSocketManager(
 
     fun subscribeToAds() {
         if (stompClient == null || !isConnected) return
+
+        if (adsTopicDisposable != null && !adsTopicDisposable!!.isDisposed) {
+            Log.d(TAG, "Already subscribed to /topic/ads, skipping")
+            return
+        }
+
         if (adsTopicDisposable != null && !adsTopicDisposable!!.isDisposed) {
             adsTopicDisposable!!.dispose()
         }
@@ -421,6 +461,12 @@ class WebSocketManager(
 
     fun subscribeToNotifications() {
         if (stompClient == null || !isConnected) return
+
+        if (topicDisposable != null && !topicDisposable!!.isDisposed
+            && publicTopicDisposable != null && !publicTopicDisposable!!.isDisposed) {
+            Log.d(TAG, "Already subscribed to notification topics, skipping")
+            return
+        }
 
         // Отписываемся от старых подписок, если они есть
         if (topicDisposable != null && !topicDisposable!!.isDisposed) {

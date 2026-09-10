@@ -55,16 +55,12 @@ class ApiClient private constructor() {
 
     companion object {
         private val refreshScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-        private const val LOCAL_BASE_URL = "http://192.168.0.119:8082/api/"
-        private const val REMOTE_BASE_URL = "https://varamy.online/api-staging/"
+        private const val REMOTE_BASE_URL = "http://192.168.0.119:8082/api/"
+        //private const val REMOTE_BASE_URL = "https://varamy.online/api-staging/"
 
         //Первый подключается глобальный адрес
         @Volatile
         private var currentBaseUrl: String = REMOTE_BASE_URL
-
-        //Первый подключается локальный адрес
-        /*@Volatile
-        private var currentBaseUrl: String = LOCAL_BASE_URL*/
 
         @Volatile
         private var httpClient: OkHttpClient? = null
@@ -401,57 +397,11 @@ class ApiClient private constructor() {
             isChecking = true
 
             CoroutineScope(Dispatchers.IO).launch {
-                var globalReachable = false
-                try {
-                    val client = OkHttpClient.Builder()
-                        .connectTimeout(10, TimeUnit.SECONDS)
-                        .readTimeout(10, TimeUnit.SECONDS)
-                        .build()
-                    val request = Request.Builder()
-                        .url(REMOTE_BASE_URL + "ads/all")
-                        .build()
-                    val response = client.newCall(request).execute()
-                    globalReachable = response.isSuccessful
-                    response.close()
-                } catch (e: Exception) {
-                    if (BuildConfig.LOG_ENABLED) {
-                        Log.d("ApiClient", "Global server not reachable: ${e.message}")
-                    }
+                setBaseUrl(REMOTE_BASE_URL)
+                if (BuildConfig.LOG_ENABLED) {
+                    Log.d("ApiClient", "✅ Using global server: $REMOTE_BASE_URL")
                 }
-
-                if (globalReachable) {
-                    if (BuildConfig.LOG_ENABLED) {
-                        Log.d("ApiClient", "✅ Global server reachable: $REMOTE_BASE_URL")
-                    }
-                    setBaseUrl(REMOTE_BASE_URL)
-                    callback?.onUrlReady(REMOTE_BASE_URL)
-                } else {
-                    try {
-                        val client = OkHttpClient.Builder()
-                            .connectTimeout(10, TimeUnit.SECONDS)
-                            .readTimeout(10, TimeUnit.SECONDS)
-                            .build()
-                        val request = Request.Builder()
-                            .url(LOCAL_BASE_URL + "ads/all")
-                            .build()
-                        val response = client.newCall(request).execute()
-                        val localReachable = response.isSuccessful
-                        response.close()
-                        if (localReachable) {
-                            Log.d("ApiClient", "✅ Local server reachable: $LOCAL_BASE_URL")
-                            setBaseUrl(LOCAL_BASE_URL)
-                            callback?.onUrlReady(LOCAL_BASE_URL)
-                        } else {
-                            Log.d("ApiClient", "❌ Both servers unreachable, using remote as fallback")
-                            setBaseUrl(REMOTE_BASE_URL)
-                            callback?.onUrlReady(REMOTE_BASE_URL)
-                        }
-                    } catch (e: Exception) {
-                        Log.d("ApiClient", "Local server not reachable: ${e.message}")
-                        setBaseUrl(REMOTE_BASE_URL)
-                        callback?.onUrlReady(REMOTE_BASE_URL)
-                    }
-                }
+                callback?.onUrlReady(REMOTE_BASE_URL)
                 isChecking = false
             }
         }

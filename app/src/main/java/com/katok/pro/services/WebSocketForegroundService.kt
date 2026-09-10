@@ -164,8 +164,8 @@ class WebSocketForegroundService : Service(), ApiClient.TokenRefreshListener {
                                 }
                                 pendingAdIds.clear()
                             }
-                            sharedWebSocketManager?.subscribeToAds()
-                            sharedWebSocketManager?.subscribeToNotifications()
+                            //sharedWebSocketManager?.subscribeToAds()
+                            //sharedWebSocketManager?.subscribeToNotifications()
                         }
 
                         override fun onDisconnected() {

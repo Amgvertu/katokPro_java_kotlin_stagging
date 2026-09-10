@@ -1,7 +1,6 @@
 package com.katok.pro
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,7 +18,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -37,7 +35,6 @@ import com.katok.pro.services.WebSocketForegroundService
 import com.katok.pro.ui.MainActivityViewModel
 import com.katok.pro.ui.MessagesViewModel
 import com.katok.pro.util.NotificationHelper
-import com.katok.pro.util.PrivacyHelper
 import com.katok.pro.util.ProfileHelper
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
@@ -107,11 +104,12 @@ class MainActivity : AppCompatActivity() {
         tokenManager = TokenManager.getInstance(this)
 
         val filter = IntentFilter("REFRESH_UNREAD_COUNT")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(unreadCountReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(unreadCountReceiver, filter)
-        }
+        ContextCompat.registerReceiver(
+            this,
+            unreadCountReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
 
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -219,17 +217,6 @@ class MainActivity : AppCompatActivity() {
                         }
                         if (isLoggedIn) {
                             WebSocketForegroundService.start(this@MainActivity)
-                        }
-                    }
-                    lifecycleScope.launch {
-                        val accepted = PrivacyHelper.showPrivacyDialogIfNeeded(
-                            context = this@MainActivity,
-                            lifecycleScope = this@MainActivity.lifecycleScope
-                        )
-                        if (!accepted) {
-                            // Если пользователь не согласился (теоретически не может, т.к. только "Принимаю"),
-                            // можно закрыть приложение
-                            finishAffinity()
                         }
                     }
                 }
@@ -527,7 +514,15 @@ class MainActivity : AppCompatActivity() {
                             onTokenValid = {
                                 runOnUiThread {
                                     val navController = Navigation.findNavController(this@MainActivity, R.id.nav_host_fragment)
-                                    if (navController.currentDestination?.id != R.id.navigation_main) {
+                                    val currentId = navController.currentDestination?.id
+                                    // Перебрасываем на главную ТОЛЬКО с экранов входа/регистрации,
+                                    // а НЕ если пользователь уже работает с объявлениями
+                                    val authScreens = setOf(
+                                        R.id.loginFragment,
+                                        R.id.registerFragment,
+                                        R.id.forgotPasswordFragment
+                                    )
+                                    if (currentId == null || currentId in authScreens) {
                                         navController.navigate(R.id.navigation_main)
                                     }
                                 }

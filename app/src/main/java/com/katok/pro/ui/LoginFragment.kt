@@ -26,11 +26,13 @@ import com.katok.pro.repository.AuthRepository
 import com.katok.pro.repository.UserRepository
 import com.katok.pro.services.WebSocketForegroundService
 import com.katok.pro.util.PhoneUtils
+import com.katok.pro.util.PrivacyHelper
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.TokenManager
 import com.katok.pro.util.TokenRegistrationService
 import com.katok.pro.workers.TokenRefreshScheduler
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -102,10 +104,20 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
             return
         }
 
-        binding?.progressBar?.visibility = View.VISIBLE
-        binding?.btnLogin?.isEnabled = false
+        val ctx = requireContext()
+        val viewScope = viewLifecycleOwner.lifecycleScope
 
         lifecycleScope.launch {
+            // Показываем пользовательское соглашение, если оно ещё не принято
+            val accepted = PrivacyHelper.showPrivacyDialogIfNeeded(
+                context = ctx,
+                lifecycleScope = viewScope
+            )
+            if (!accepted) return@launch
+
+            binding?.progressBar?.visibility = View.VISIBLE
+            binding?.btnLogin?.isEnabled = false
+
             val result = authRepository.login(phone, password)
             binding?.progressBar?.visibility = View.GONE
             binding?.btnLogin?.isEnabled = true
@@ -121,7 +133,7 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
                     sessionManager.saveUser(user)
 
                     val tokenRegistrationService = TokenRegistrationService(requireContext())
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(Dispatchers.IO) {           // ← добавили Dispatchers.IO
                         tokenRegistrationService.registerAllTokens()
                         Log.d("PushDebug", "✅ registerAllTokens() вызван после логина")
                     }
@@ -141,15 +153,6 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
                         val intent = Intent(requireContext(), WebSocketForegroundService::class.java)
                         intent.putExtra("token", accessToken)
                         requireContext().startService(intent)
-                    }
-
-                    FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                        if (task.isSuccessful && task.result != null) {
-                            val fcmToken = task.result
-                            lifecycleScope.launch {
-                                userRepository.updateFcmToken(fcmToken)
-                            }
-                        }
                     }
 
                     Toast.makeText(context, "Вход выполнен успешно", Toast.LENGTH_SHORT).show()
@@ -172,7 +175,19 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
     }
 
     private fun openRegisterFragment() {
-        NavHostFragment.findNavController(this).navigate(R.id.registerFragment)
+        val ctx = requireContext()
+        val viewScope = viewLifecycleOwner.lifecycleScope
+
+        lifecycleScope.launch {
+            val accepted = PrivacyHelper.showPrivacyDialogIfNeeded(
+                context = ctx,
+                lifecycleScope = viewScope
+            )
+            if (!accepted) return@launch
+
+            NavHostFragment.findNavController(this@LoginFragment)
+                .navigate(R.id.registerFragment)
+        }
     }
 
     override fun onDestroyView() {

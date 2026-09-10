@@ -16,7 +16,7 @@ class TokenRegistrationService(private val context: Context) {
     companion object {
         private const val TAG = "TokenRegistration"
         private const val MAX_ATTEMPTS = 3
-        private const val RETRY_DELAY_MS = 2000L
+        private const val RETRY_DELAY_MS = 500L
     }
 
     /**
