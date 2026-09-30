@@ -135,7 +135,11 @@ class ProfileFragment : Fragment() {
                     val profileInfoViewModel = ViewModelProvider(requireActivity())
                         .get(ProfileInfoViewModel::class.java)
                     profileInfoViewModel.clearAll()
-                    NavHostFragment.findNavController(this@ProfileFragment).navigate(R.id.loginFragment)
+                    val navController = NavHostFragment.findNavController(this@ProfileFragment)
+                    val navOptions = androidx.navigation.NavOptions.Builder()
+                        .setPopUpTo(navController.graph.id, true)
+                        .build()
+                    navController.navigate(R.id.loginFragment, null, navOptions)
                     WebSocketForegroundService.stop(requireContext())
                     Toast.makeText(context, "Вы вышли из системы", Toast.LENGTH_SHORT).show()
 

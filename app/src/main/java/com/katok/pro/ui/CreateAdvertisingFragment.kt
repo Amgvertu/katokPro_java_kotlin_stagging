@@ -56,12 +56,16 @@ class CreateAdvertisingFragment : BaseFragment(R.layout.fragment_create_advertis
         uri?.let {
             try {
                 selectedImageFile = saveImageToTempFile(it)
-                Glide.with(this).load(selectedImageFile).into(binding.ivPreview)
-                binding.layoutImagePreview.visibility = View.VISIBLE
                 uploadedImageUrl = null
-                validateForm()
+                if (_binding != null) {
+                    binding.ivPreview.setImageURI(it)
+                    binding.layoutImagePreview.visibility = View.VISIBLE
+                    validateForm()
+                }
             } catch (e: Exception) {
-                ToastHelper.showError(requireContext(), "Ошибка при выборе изображения")
+                if (_binding != null) {
+                    ToastHelper.showError(requireContext(), "Ошибка при выборе изображения")
+                }
             }
         }
     }

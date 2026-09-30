@@ -190,20 +190,45 @@ class AdCardAdapter(
         if (!isArchived) addBadge(isModeration, "  ⏳ На модерации  ", R.color.warning, R.color.warning_text)
         addBadge(ad.isNew, "  🆕 Новое  ", R.color.accent, R.color.white)
 
-        // ЛДС
-        val firstRinkId = ad.rinkIds?.firstOrNull()
-        val rink = getRinkById(firstRinkId)
-        if (rink != null) {
-            holder.tvRink.text = rink.name ?: "ЛДС не указан"
-            val address = rink.address
-            if (!address.isNullOrEmpty()) {
-                holder.tvRinkAddress.text = "📍 $address"
-                holder.tvRinkAddress.visibility = View.VISIBLE
-            } else {
-                holder.tvRinkAddress.visibility = View.GONE
-            }
-        } else {
+        // ЛДС (поддержка нескольких)
+        val foundRinks = ad.rinkIds?.mapNotNull { id -> rinks.find { it.id == id } } ?: emptyList()
+        if (foundRinks.isEmpty()) {
             holder.tvRink.text = "ЛДС не указан"
+            holder.tvRinkAddress.visibility = View.GONE
+        } else {
+            val sb = android.text.SpannableStringBuilder()
+            foundRinks.forEachIndexed { index, rink ->
+                val name = rink.name ?: ""
+                val nameStart = sb.length
+                sb.append(name)
+                sb.setSpan(
+                    android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                    nameStart, sb.length,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                sb.setSpan(
+                    android.text.style.AbsoluteSizeSpan(14, true),
+                    nameStart, sb.length,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+
+                val address = rink.address
+                if (!address.isNullOrEmpty()) {
+                    sb.append("\n    ")
+                    val addrStart = sb.length
+                    sb.append(address)
+                    sb.setSpan(
+                        android.text.style.AbsoluteSizeSpan(11, true),
+                        addrStart, sb.length,
+                        android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+
+                if (index < foundRinks.size - 1) {
+                    sb.append("\n")
+                }
+            }
+            holder.tvRink.text = sb
             holder.tvRinkAddress.visibility = View.GONE
         }
 

@@ -20,6 +20,7 @@ class AdminUserTableAdapter(
 
     private var users: List<User> = emptyList()
     private var columnWidths: IntArray? = null
+    private var totalCount: Int = 0
     private val density = context.resources.displayMetrics.density
     private val textSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
 
@@ -44,11 +45,11 @@ class AdminUserTableAdapter(
 
         val paint = Paint().apply { textSize = textSizePx }
         // Заголовки (шапка) – они должны учитываться
-        val headers = listOf("Телефон", "Имя Фамилия", "Роль", "Статус", "Email", "Команда")
+        val headers = listOf("№", "Телефон", "Имя Фамилия", "Роль", "Статус", "Email", "Команда")
         val headerWidths = headers.map { paint.measureText(it).toInt() + 20 } // + отступы
 
         // Максимальные ширины по данным
-        val maxWidths = IntArray(6) { 0 }
+        val maxWidths = IntArray(7) { 0 }
         for (user in users) {
             val phone = PhoneUtils.formatPhoneNumberForDisplay(user.phone) ?: ""
             val name = "${user.profile?.firstName ?: ""} ${user.profile?.lastName ?: ""}".trim()
@@ -57,7 +58,9 @@ class AdminUserTableAdapter(
             val email = user.profile?.email ?: ""
             val team = user.profile?.team ?: ""
 
+            val numberSample = (totalCount.takeIf { it > 0 } ?: 1000).toString()
             val widths = listOf(
+                paint.measureText(numberSample).toInt() + 20,
                 paint.measureText(phone).toInt() + 20,
                 paint.measureText(name).toInt() + 20,
                 paint.measureText(role).toInt() + 30,
@@ -65,13 +68,13 @@ class AdminUserTableAdapter(
                 paint.measureText(email).toInt() + 20,
                 paint.measureText(team).toInt() + 20
             )
-            for (i in 0 until 6) {
+            for (i in 0 until 7) {
                 if (widths[i] > maxWidths[i]) maxWidths[i] = widths[i]
             }
         }
 
         // Берём максимум из заголовков и данных
-        columnWidths = IntArray(6) { i ->
+        columnWidths = IntArray(7) { i ->
             maxOf(headerWidths[i], maxWidths[i])
         }
     }
@@ -85,6 +88,13 @@ class AdminUserTableAdapter(
         }
     }
 
+    fun setTotalCount(total: Int) {
+        if (totalCount != total) {
+            totalCount = total
+            notifyDataSetChanged()
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemAdminUserTableBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -94,7 +104,7 @@ class AdminUserTableAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val user = users[position]
-        holder.bind(user, columnWidths)
+        holder.bind(user, columnWidths, position)
         holder.itemView.setOnClickListener { onItemClick(user) }
         holder.itemView.setOnLongClickListener {
             onLongClick(user)
@@ -107,7 +117,11 @@ class AdminUserTableAdapter(
     inner class ViewHolder(private val binding: ItemAdminUserTableBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(user: User, widths: IntArray?) {
+        fun bind(user: User, widths: IntArray?, position: Int) {
+            // Номер: верхний = максимальный
+            val displayNumber = if (totalCount > 0) totalCount - position else itemCount - position
+            binding.tvNumber.text = displayNumber.toString()
+
             binding.tvPhone.text = PhoneUtils.formatPhoneNumberForDisplay(user.phone)
             val fullName = "${user.profile?.firstName ?: ""} ${user.profile?.lastName ?: ""}".trim()
             binding.tvName.text = if (fullName.isEmpty()) "—" else fullName
@@ -129,12 +143,13 @@ class AdminUserTableAdapter(
 
             // Применяем вычисленные ширины, если они есть
             widths?.let {
-                binding.tvPhone.layoutParams.width = it[0]
-                binding.tvName.layoutParams.width = it[1]
-                binding.tvRole.layoutParams.width = it[2]
-                binding.tvStatus.layoutParams.width = it[3]
-                binding.tvEmail.layoutParams.width = it[4]
-                binding.tvTeam.layoutParams.width = it[5]
+                binding.tvNumber.layoutParams.width = it[0]
+                binding.tvPhone.layoutParams.width = it[1]
+                binding.tvName.layoutParams.width = it[2]
+                binding.tvRole.layoutParams.width = it[3]
+                binding.tvStatus.layoutParams.width = it[4]
+                binding.tvEmail.layoutParams.width = it[5]
+                binding.tvTeam.layoutParams.width = it[6]
             }
         }
     }

@@ -56,6 +56,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
     private lateinit var tokenManager: TokenManager
     private lateinit var formPersistence: FormPersistence
     private var adId: String? = null
+    private var loadedAd: Ad? = null
     private val rinksList = mutableListOf<Rink>()
     private val cityList = mutableListOf<City>()
     private var selectedCityId: Int? = null
@@ -674,6 +675,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
     }
 
     private fun fillFormWithAd(ad: Ad) {
+        loadedAd = ad
         isRestoring = true
         val categoryPos = ad.type
         val typePos = ad.subType
@@ -828,7 +830,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
         val categoryPos = binding.spinnerCategory.selectedItemPosition
         val typePos = binding.spinnerType.selectedItemPosition
         if (categoryPos == 0 || typePos == 0) return null
-        val ad = Ad()
+        val ad = loadedAd?.copy() ?: Ad()
         ad.type = categoryPos
         ad.subType = typePos
         if (selectedCityId != null && selectedCityId!! > 0) ad.cityId = selectedCityId
@@ -1081,6 +1083,7 @@ class CreateAdFragment : BaseFragment(R.layout.fragment_create_ad) {
         binding.layoutTimeSingle.visibility = View.VISIBLE
         binding.layoutGoalieCount.visibility = View.GONE
         binding.layoutFieldPlayers.visibility = View.GONE
+        loadedAd = null
     }
 
     private suspend fun restoreFormIfNeeded() {

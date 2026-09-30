@@ -69,16 +69,16 @@ class AdminAdTableAdapter(
         for (ad in ads) {
             // ... остальные поля ...
 
-            // --- СТАДИОН (учитываем название и адрес) ---
-            val rinkId = ad.rinkIds?.firstOrNull()
-            val rink = rinkId?.let { rinkCache.find { it.id == rinkId } }
-            val rinkName = rink?.name ?: "—"
-            val rinkAddress = rink?.address ?: ""
-            // Вычисляем ширину как максимум из названия и адреса + отступы (30px для padding и границ)
-            val rinkWidth = maxOf(
-                paint.measureText(rinkName).toInt(),
-                paint.measureText(rinkAddress).toInt()
-            ) + 30   // ← увеличили запас
+            // --- СТАДИОН (учитываем ВСЕ названия и адреса) ---
+            val foundRinks = ad.rinkIds?.mapNotNull { id -> rinkCache.find { it.id == id } } ?: emptyList()
+            val rinkTexts = foundRinks.flatMap { rk ->
+                listOfNotNull(rk.name, rk.address)
+            }
+            val rinkWidth = if (rinkTexts.isEmpty()) {
+                paint.measureText("—").toInt() + 30
+            } else {
+                rinkTexts.maxOf { paint.measureText(it).toInt() } + 30
+            }
 
             // Ширины остальных столбцов (как было)
             val status = when (ad.status) {
@@ -172,11 +172,21 @@ class AdminAdTableAdapter(
             binding.tvType.text = ad.getTagText()
             binding.tvCity.text = ad.city?.name ?: "—"
 
-            val rinkId = ad.rinkIds?.firstOrNull()
-            val rink = rinkId?.let { rinkCache.find { it.id == rinkId } }
-            binding.tvRink.text = rink?.name ?: "—"
-            binding.tvRinkAddress.text = rink?.address ?: ""
-            binding.tvRinkAddress.visibility = if (rink?.address != null) View.VISIBLE else View.GONE
+            val foundRinks = ad.rinkIds?.mapNotNull { id -> rinkCache.find { it.id == id } } ?: emptyList()
+            if (foundRinks.isEmpty()) {
+                binding.tvRink.text = "—"
+                binding.tvRinkAddress.text = ""
+                binding.tvRinkAddress.visibility = View.GONE
+            } else {
+                binding.tvRink.text = foundRinks.joinToString("\n") { it.name ?: "" }
+                val addresses = foundRinks.joinToString("\n") { it.address ?: "" }
+                if (addresses.replace("\n", "").isNotBlank()) {
+                    binding.tvRinkAddress.text = addresses
+                    binding.tvRinkAddress.visibility = View.VISIBLE
+                } else {
+                    binding.tvRinkAddress.visibility = View.GONE
+                }
+            }
 
             val dateTime = try {
                 val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())

@@ -93,6 +93,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
             onLongClick = { user -> showUserContextMenu(user) }
         )
         headerViews = listOf(
+            binding.tvHeaderNumber,
             binding.tvHeaderPhone,
             binding.tvHeaderName,
             binding.tvHeaderRole,
@@ -264,7 +265,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
             override fun afterTextChanged(s: Editable?) {
                 searchJob?.cancel()
                 searchQuery = s.toString().trim()
-                searchJob = lifecycleScope.launch {
+                searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(300)
                     resetPagination()
                     loadUsers()
@@ -274,7 +275,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
     }
 
     private fun loadFilterData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             // Города
             val citiesResult = locationRepository.getAllCitiesByCountry(1)
             if (citiesResult is NetworkResult.Success) {
@@ -309,7 +310,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
         isLoading = true
         binding.swipeRefresh.isRefreshing = true
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.getAdminUsers(
                 role = selectedRoles.toList().takeIf { it.isNotEmpty() },
                 status = selectedStatuses.toList().takeIf { it.isNotEmpty() },
@@ -329,6 +330,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
                     val users = result.data.content ?: emptyList()
                     totalPages = result.data.totalPages
                     currentPage = page
+                    adapter.setTotalCount(result.data.totalElements.toInt())
                     if (nextPage) {
                         adapter.addItems(users)
                     } else {
@@ -463,7 +465,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
     }
 
     private fun changeUserStatus(userId: String, newStatus: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.changeUserStatus(userId, newStatus)
             when (result) {
                 is NetworkResult.Success -> {
@@ -479,7 +481,7 @@ class AdminUserFragment : BaseFragment(R.layout.fragment_admin_users) {
     }
 
     private fun deleteUser(userId: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.deleteUser(userId)
             when (result) {
                 is NetworkResult.Success -> {

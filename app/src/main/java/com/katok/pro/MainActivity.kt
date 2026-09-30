@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
             )
             val showMenu = isLoggedIn && currentDest?.id !in noMenuFragments
             showBottomNavigation(showMenu)
-            supportActionBar?.setDisplayHomeAsUpEnabled(currentDest?.id != R.id.loginFragment)
+            supportActionBar?.setDisplayHomeAsUpEnabled(navController.previousBackStackEntry != null)
 
             // Слушатель смены фрагмента (управление меню и стрелкой)
             navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
                     val noMenu = setOf(R.id.loginFragment, R.id.registerFragment, R.id.forgotPasswordFragment)
                     val show = isLoggedInNow && destination.id !in noMenu
                     showBottomNavigation(show)
-                    supportActionBar?.setDisplayHomeAsUpEnabled(destination.id != R.id.loginFragment)
+                    supportActionBar?.setDisplayHomeAsUpEnabled(navController.previousBackStackEntry != null)
                 }
             }
 
@@ -416,21 +416,15 @@ class MainActivity : AppCompatActivity() {
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+        val isAtRoot = navController.currentDestination?.id == navController.graph.startDestinationId
+        if (isAtRoot && navController.previousBackStackEntry == null) {
+            showExitDialog()
+            return
+        }
         if (!navController.navigateUp()) {
             @Suppress("DEPRECATION")
             super.onBackPressed()
         }
-        if (navController.currentDestination?.id == R.id.navigation_main) {
-            // Проверяем, есть ли в стеке другие фрагменты (т.е. не корневой)
-            // Если стек пуст (только главный), показываем диалог
-            if (navController.graph.startDestinationId == R.id.navigation_main) {
-                showExitDialog()
-                return
-            }
-        }
-        // Иначе стандартное поведение – переход назад
-        super.onBackPressed()
-
     }
 
     private fun showExitDialog() {

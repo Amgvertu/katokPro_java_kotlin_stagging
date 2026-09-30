@@ -51,11 +51,7 @@ class AdminFragment : Fragment() {
         val fragments = mutableListOf<Fragment>()
         val titles = mutableListOf<String>()
 
-        // Всегда добавляем вкладку "Реклама"
-        fragments.add(AdminAdvertisingFragment())
-        titles.add("Реклама")
-
-        // Для ADMIN/MODERATOR добавляем остальные вкладки
+        // Для ADMIN/MODERATOR: Пользователи, Объявления, Сообщения, Мониторинг, затем Реклама
         if (isAdminOrModerator) {
             fragments.add(AdminUserFragment())
             titles.add("Пользователи")
@@ -66,6 +62,10 @@ class AdminFragment : Fragment() {
             fragments.add(MonitoringFragment())
             titles.add("Мониторинг")
         }
+
+        // Реклама — всегда в крайнем правом положении
+        fragments.add(AdminAdvertisingFragment())
+        titles.add("Реклама")
 
         val adapter = object : FragmentStateAdapter(this) {
             override fun getItemCount(): Int = fragments.size

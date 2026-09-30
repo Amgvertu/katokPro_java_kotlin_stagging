@@ -127,7 +127,7 @@ class AdminMessagesFragment : BaseFragment(R.layout.fragment_admin_messages) {
         updateSelectedTeamsDisplay()
         validateForm()
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             if (!sessionManager.isAdmin()) {
                 ToastHelper.showError(requireContext(), "Доступ запрещён")
                 requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -208,7 +208,7 @@ class AdminMessagesFragment : BaseFragment(R.layout.fragment_admin_messages) {
                     binding.rvFoundUsers.visibility = View.GONE
                     return
                 }
-                searchJob = lifecycleScope.launch {
+                searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(300)
                     searchUsers(query)
                 }
@@ -231,7 +231,7 @@ class AdminMessagesFragment : BaseFragment(R.layout.fragment_admin_messages) {
 
     // ===== Загрузка данных с сервера =====
     private fun loadCities() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = locationRepository.getAllCitiesByCountry(1)
             if (result is NetworkResult.Success) {
                 allCities.clear()
@@ -241,7 +241,7 @@ class AdminMessagesFragment : BaseFragment(R.layout.fragment_admin_messages) {
     }
 
     private fun loadTeams() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.getTeams()
             if (result is NetworkResult.Success) {
                 allTeams.clear()
@@ -485,7 +485,7 @@ class AdminMessagesFragment : BaseFragment(R.layout.fragment_admin_messages) {
             )
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             binding.progressBar.visibility = View.VISIBLE
             binding.btnSend.isEnabled = false
 

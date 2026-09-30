@@ -208,7 +208,7 @@ class AdminAdvertisingFragment : BaseFragment(R.layout.fragment_admin_advertisin
             override fun afterTextChanged(s: Editable?) {
                 searchJob?.cancel()
                 advertiserSearch = s.toString().trim()
-                searchJob = lifecycleScope.launch {
+                searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(300)
                     resetPagination()
                     loadAdvertisements()
@@ -218,7 +218,7 @@ class AdminAdvertisingFragment : BaseFragment(R.layout.fragment_admin_advertisin
     }
 
     private fun loadCities() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = locationRepository.getAllCitiesByCountry(1)
             if (result is NetworkResult.Success) {
                 allCities.clear()
@@ -246,7 +246,7 @@ class AdminAdvertisingFragment : BaseFragment(R.layout.fragment_admin_advertisin
         isLoading = true
         binding.swipeRefresh.isRefreshing = true
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = advertisingRepository.getAdminAdvertisements(
                 status = selectedStatuses.toList().takeIf { it.isNotEmpty() },
                 advertiser = advertiserSearch.takeIf { it.isNotEmpty() },
@@ -370,7 +370,7 @@ class AdminAdvertisingFragment : BaseFragment(R.layout.fragment_admin_advertisin
     }
 
     private fun updateStatus(id: String, status: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = advertisingRepository.updateAdvertisingStatus(id, status)
             when (result) {
                 is NetworkResult.Success -> {
@@ -388,7 +388,7 @@ class AdminAdvertisingFragment : BaseFragment(R.layout.fragment_admin_advertisin
             .setTitle("Удаление рекламы")
             .setMessage("Вы уверены, что хотите удалить эту рекламу?")
             .setPositiveButton("Удалить") { _, _ ->
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val result = advertisingRepository.deleteAdvertising(id)
                     when (result) {
                         is NetworkResult.Success -> {

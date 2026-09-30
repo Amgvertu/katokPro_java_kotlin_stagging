@@ -287,7 +287,7 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
             override fun afterTextChanged(s: Editable?) {
                 searchJob?.cancel()
                 searchQuery = s.toString().trim()
-                searchJob = lifecycleScope.launch {
+                searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(300)
                     resetPagination()
                     loadAds()
@@ -297,7 +297,7 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
     }
 
     private fun loadFilterData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val citiesResult = locationRepository.getAllCitiesByCountry(1)
             if (citiesResult is NetworkResult.Success) {
                 allCities.clear()
@@ -337,7 +337,7 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
         isLoading = true
         binding.swipeRefresh.isRefreshing = true
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.getAdminAds(
                 status = selectedStatuses.toList().takeIf { it.isNotEmpty() },
                 type = selectedTypes.toList().takeIf { it.isNotEmpty() },
@@ -483,7 +483,7 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
 
     private fun archiveOrUnarchiveAd(adId: String, isArchived: Boolean) {
         val newStatus = if (isArchived) "ACTIVE" else "ARCHIVED"
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val ad = Ad().apply { status = newStatus }
             val result = adRepository.updateAd(adId, ad)
             when (result) {
@@ -500,7 +500,7 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
     }
 
     private fun deleteAd(adId: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val result = adminRepository.deleteAd(adId)
             when (result) {
                 is NetworkResult.Success -> {

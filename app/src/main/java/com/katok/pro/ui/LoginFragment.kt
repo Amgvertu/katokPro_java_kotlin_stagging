@@ -156,7 +156,11 @@ class LoginFragment : BaseFragment(R.layout.fragment_login) {
                     }
 
                     Toast.makeText(context, "Вход выполнен успешно", Toast.LENGTH_SHORT).show()
-                    NavHostFragment.findNavController(this@LoginFragment).navigate(R.id.navigation_main)
+                    val navController = NavHostFragment.findNavController(this@LoginFragment)
+                    val navOptions = androidx.navigation.NavOptions.Builder()
+                        .setPopUpTo(R.id.loginFragment, true)
+                        .build()
+                    navController.navigate(R.id.navigation_main, null, navOptions)
 
                     // Обновляем меню в MainActivity
                     (requireActivity() as? MainActivity)?.resetTokenCheck()

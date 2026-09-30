@@ -309,8 +309,11 @@ class RegisterFragment : BaseFragment(R.layout.fragment_register) {
                     tokenManager.saveTokens(loginResponse.accessToken, loginResponse.refreshToken)
                     sessionManager.saveUser(loginResponse.user)
                     // Переход на профиль
-                    NavHostFragment.findNavController(this@RegisterFragment)
-                        .navigate(R.id.navigation_profile)
+                    val navController = NavHostFragment.findNavController(this@RegisterFragment)
+                    val navOptions = androidx.navigation.NavOptions.Builder()
+                        .setPopUpTo(R.id.registerFragment, true)
+                        .build()
+                    navController.navigate(R.id.navigation_profile, null, navOptions)
 
 // Показываем тост
                     Toast.makeText(requireContext(), "Для правильного функционирования приложения – заполните профиль", Toast.LENGTH_LONG).show()

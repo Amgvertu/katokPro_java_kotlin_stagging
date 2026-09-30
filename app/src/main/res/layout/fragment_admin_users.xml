@@ -173,6 +173,14 @@
                     android:minHeight="40dp">
 
                     <TextView
+                        android:id="@+id/tvHeaderNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="№"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textSize="12sp" />
+                    <TextView
                         android:id="@+id/tvHeaderPhone"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
