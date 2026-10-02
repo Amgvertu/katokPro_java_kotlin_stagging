@@ -245,6 +245,14 @@
                         android:textStyle="bold"
                         android:gravity="center"
                         android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/tvHeaderViews"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Просмотры"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView

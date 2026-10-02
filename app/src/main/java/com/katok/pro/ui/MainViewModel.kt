@@ -274,6 +274,54 @@ class MainViewModel @Inject constructor(
         mergeItems()
     }
 
+    /**
+     * Увеличивает счётчик просмотров объявления локально (оптимистично)
+     * и отправляет запрос на сервер. При ошибке — откатывает локальный инкремент.
+     */
+    fun incrementViewCount(adId: String) {
+        val currentList = _ads.value.toMutableList()
+        val index = currentList.indexOfFirst { it.id.toString() == adId }
+        if (index == -1) return
+
+        val oldAd = currentList[index]
+        val oldCount = oldAd.viewsCount ?: 0L
+        currentList[index] = oldAd.copy(viewsCount = oldCount + 1L)
+        _ads.value = currentList
+        mergeItems()
+
+        viewModelScope.launch {
+            val result = adRepository.incrementViews(adId)
+            if (result is NetworkResult.Error) {
+                val rollbackList = _ads.value.toMutableList()
+                val i = rollbackList.indexOfFirst { it.id.toString() == adId }
+                if (i != -1) {
+                    val cur = rollbackList[i]
+                    val back = (cur.viewsCount ?: 1L) - 1L
+                    rollbackList[i] = cur.copy(viewsCount = maxOf(0L, back))
+                    _ads.value = rollbackList
+                    mergeItems()
+                }
+            }
+        }
+    }
+
+    /**
+     * Обновляет счётчик просмотров объявления значением, пришедшим
+     * по WebSocket от сервера. Не инициирует никаких сетевых запросов.
+     */
+    fun updateAdViews(adId: String, viewsCount: Long) {
+        val currentList = _ads.value.toMutableList()
+        val index = currentList.indexOfFirst { it.id.toString() == adId }
+        if (index == -1) return
+
+        val old = currentList[index]
+        if (old.viewsCount == viewsCount) return
+
+        currentList[index] = old.copy(viewsCount = viewsCount)
+        _ads.value = currentList
+        mergeItems()
+    }
+
     fun updateRinks(newRinks: List<Rink>) {
         _rinkList.value = newRinks
     }

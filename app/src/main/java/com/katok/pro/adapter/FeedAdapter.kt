@@ -33,7 +33,8 @@ import java.util.*
 class FeedAdapter(
     private val context: Context,
     private val adListener: AdCardAdapter.OnAdActionListener,
-    private val onAdvertClick: (Advertising) -> Unit
+    private val onAdvertClick: (Advertising) -> Unit,
+    private val onAdViewed: (String) -> Unit = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -75,7 +76,7 @@ class FeedAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_AD) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ad_card, parent, false)
-            AdViewHolder(view, adListener, currentUserId, currentUserPhone, rinks)
+            AdViewHolder(view, adListener, currentUserId, currentUserPhone, rinks, onAdViewed)
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_advertising_card, parent, false)
             AdvertViewHolder(view, onAdvertClick)
@@ -101,7 +102,8 @@ class FeedAdapter(
         private val listener: AdCardAdapter.OnAdActionListener,
         private var currentUserId: String?,
         private var currentUserPhone: String?,
-        private var rinks: List<Rink>
+        private var rinks: List<Rink>,
+        private val onAdViewed: (String) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
         // Все View, как в item_ad_card.xml
@@ -130,6 +132,7 @@ class FeedAdapter(
         private val dividerButtons: View? = itemView.findViewById(R.id.divider_buttons)
         private val rvResponses: RecyclerView = itemView.findViewById(R.id.rvResponses)
         private val tvResponseStatus: TextView = itemView.findViewById(R.id.tv_response_status)
+        private val tvViews: TextView = itemView.findViewById(R.id.tv_views)
 
         fun updateUserData(userId: String?, phone: String?, newRinks: List<Rink>) {
             currentUserId = userId
@@ -139,6 +142,21 @@ class FeedAdapter(
 
         fun bind(ad: Ad) {
             val isOwner = currentUserId != null && ad.authorId != null && currentUserId == ad.authorId
+            // --- Счётчик просмотров (только автору) ---
+            if (isOwner) {
+                tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
+                tvViews.visibility = View.VISIBLE
+            } else {
+                tvViews.visibility = View.GONE
+            }
+
+            // --- Отправка события "просмотр" ---
+            val adIdForView = ad.id?.toString()
+            if (adIdForView != null && !isOwner) {
+                if (com.katok.pro.util.ViewedAdsTracker.markViewed(adIdForView)) {
+                    itemView.post { onAdViewed(adIdForView) }
+                }
+            }
             val isArchived = "ARCHIVED" == ad.status
             val isModeration = "MODERATION" == ad.status
             val isFilled = "FILLED" == ad.status

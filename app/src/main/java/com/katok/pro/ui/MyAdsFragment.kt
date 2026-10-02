@@ -15,6 +15,7 @@ import com.katok.pro.R
 import com.katok.pro.adapter.AdCardAdapter
 import com.katok.pro.databinding.FragmentMyAdsBinding
 import com.katok.pro.model.Ad
+import com.katok.pro.model.AdViewsUpdate
 import com.katok.pro.model.RealtimeEvent
 import com.katok.pro.model.Response
 import com.katok.pro.network.RealtimeEventBus
@@ -446,6 +447,11 @@ class MyAdsFragment : BaseAdsListFragment() {
                     myAdsViewModel.updateAds(current)
                 }
             }
+            RealtimeEvent.Type.AD_VIEWS_UPDATED -> {
+                val update = event.payload as? AdViewsUpdate ?: return
+                myAdsViewModel.updateAdViews(update.adId, update.viewsCount)
+            }
+
             RealtimeEvent.Type.RESPONSE_ADDED -> {
                 val response = event.payload as? Response ?: return
                 val adId = event.entityId ?: response.adId ?: return

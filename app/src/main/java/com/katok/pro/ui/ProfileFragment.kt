@@ -132,6 +132,7 @@ class ProfileFragment : Fragment() {
                     sessionManager.logout()
                     tokenManager.clear()
                     ProfileCacheManager(requireContext()).clear()
+                    com.katok.pro.util.ViewedAdsTracker.clear()
                     val profileInfoViewModel = ViewModelProvider(requireActivity())
                         .get(ProfileInfoViewModel::class.java)
                     profileInfoViewModel.clearAll()

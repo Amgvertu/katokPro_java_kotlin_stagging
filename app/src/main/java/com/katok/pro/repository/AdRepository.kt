@@ -74,6 +74,11 @@ class AdRepository {
         return result
     }
 
+
+    suspend fun incrementViews(adId: String): NetworkResult<Unit> {
+        return safeApiCallIgnoreNullData { apiService.incrementViews(adId) }
+    }
+
     suspend fun createAd(ad: Ad): NetworkResult<Ad> {
         return safeApiCall { apiService.createAd(ad) }
     }

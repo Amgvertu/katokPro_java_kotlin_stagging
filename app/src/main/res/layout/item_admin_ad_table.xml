@@ -121,4 +121,14 @@
         android:gravity="center"
         android:textColor="@color/text_primary" />
 
+
+    <TextView
+        android:id="@+id/tvViews"
+        android:layout_width="wrap_content"
+        android:minWidth="70dp"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:gravity="center"
+        android:textColor="@color/text_primary" />
+
 </LinearLayout>

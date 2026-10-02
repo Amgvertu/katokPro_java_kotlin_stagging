@@ -103,7 +103,8 @@ class AdminAdsFragment : BaseFragment(R.layout.fragment_admin_ads) {
             binding.tvHeaderAuthor,
             binding.tvHeaderPhone,
             binding.tvHeaderResponses,
-            binding.tvHeaderAccepted
+            binding.tvHeaderAccepted,
+            binding.tvHeaderViews
         )
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())

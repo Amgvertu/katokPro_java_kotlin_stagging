@@ -60,10 +60,10 @@ class AdminAdTableAdapter(
         }
 
         val paint = Paint().apply { textSize = textSizePx }
-        val headers = listOf("Статус", "Тип", "Город", "Стадион", "Дата/время", "Автор", "Телефон", "Отклики", "Принято")
+        val headers = listOf("Статус", "Тип", "Город", "Стадион", "Дата/время", "Автор", "Телефон", "Отклики", "Принято", "Просмотры")
         val headerWidths = headers.map { paint.measureText(it).toInt() + 20 }
 
-        val maxWidths = IntArray(9) { 0 }
+        val maxWidths = IntArray(10) { 0 }
         val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
 
         for (ad in ads) {
@@ -103,25 +103,27 @@ class AdminAdTableAdapter(
             val phone = ad.contactPhone?.let { PhoneUtils.formatPhoneNumberForDisplay(it) } ?: "—"
             val responses = (ad.responses?.size ?: 0).toString()
             val accepted = (ad.responses?.count { it.status == "APPROVED" } ?: 0).toString()
+            val views = (ad.viewsCount ?: 0L).toString()
 
             val widths = listOf(
                 paint.measureText(status).toInt() + 40,
                 paint.measureText(type).toInt() + 40,
                 paint.measureText(city).toInt() + 20,
-                rinkWidth + 20,  // ← используем вычисленную ширину
+                rinkWidth + 20,
                 paint.measureText(dateTime).toInt() + 40,
                 paint.measureText(author).toInt() + 20,
                 paint.measureText(phone).toInt() + 20,
                 paint.measureText(responses).toInt() + 30,
-                paint.measureText(accepted).toInt() + 30
+                paint.measureText(accepted).toInt() + 30,
+                paint.measureText(views).toInt() + 30
             )
-            for (i in 0 until 9) {
+            for (i in 0 until 10) {
                 if (widths[i] > maxWidths[i]) maxWidths[i] = widths[i]
             }
         }
 
         // Берём максимум из заголовков и данных
-        columnWidths = IntArray(9) { i ->
+        columnWidths = IntArray(10) { i ->
             maxOf(headerWidths[i], maxWidths[i])
         }
     }
@@ -204,17 +206,19 @@ class AdminAdTableAdapter(
             binding.tvPhone.text = ad.contactPhone?.let { PhoneUtils.formatPhoneNumberForDisplay(it) } ?: "—"
             binding.tvResponses.text = (ad.responses?.size ?: 0).toString()
             binding.tvAccepted.text = (ad.responses?.count { it.status == "APPROVED" } ?: 0).toString()
+            binding.tvViews.text = (ad.viewsCount ?: 0L).toString()
 
             widths?.let {
                 binding.tvStatus.layoutParams.width = it[0]
                 binding.tvType.layoutParams.width = it[1]
                 binding.tvCity.layoutParams.width = it[2]
-                binding.llRink.layoutParams.width = it[3]      // ← применяем к контейнеру
+                binding.llRink.layoutParams.width = it[3]
                 binding.tvDateTime.layoutParams.width = it[4]
                 binding.tvAuthor.layoutParams.width = it[5]
                 binding.tvPhone.layoutParams.width = it[6]
                 binding.tvResponses.layoutParams.width = it[7]
                 binding.tvAccepted.layoutParams.width = it[8]
+                binding.tvViews.layoutParams.width = it[9]
             }
         }
     }

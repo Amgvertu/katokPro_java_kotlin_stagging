@@ -340,6 +340,23 @@ class MyAdsViewModel @Inject constructor(
         loadRinksForAds(newAds)
     }
 
+
+    /**
+     * Обновляет счётчик просмотров объявления значением, пришедшим
+     * по WebSocket от сервера. Не инициирует сетевых запросов.
+     */
+    fun updateAdViews(adId: String, viewsCount: Long) {
+        val currentList = _ads.value.toMutableList()
+        val index = currentList.indexOfFirst { it.id.toString() == adId }
+        if (index == -1) return
+
+        val old = currentList[index]
+        if (old.viewsCount == viewsCount) return
+
+        currentList[index] = old.copy(viewsCount = viewsCount)
+        _ads.value = currentList
+    }
+
     fun unarchiveAd(adId: String) {
         viewModelScope.launch {
             val ad = Ad().apply { status = "ACTIVE" }

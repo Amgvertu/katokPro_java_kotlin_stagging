@@ -121,6 +121,10 @@ interface ApiService {
     @GET("ads/{id}")
     suspend fun getAdById(@Path("id") id: String): Response<ApiResponse<Ad>>
 
+
+    @POST("ads/{id}/view")
+    suspend fun incrementViews(@Path("id") id: String): Response<ApiResponse<Void>>
+
     @POST("ads")
     suspend fun createAd(@Body ad: Ad): Response<ApiResponse<Ad>>
 

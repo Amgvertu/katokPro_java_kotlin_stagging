@@ -39,6 +39,10 @@ class ResponsesFragment : BaseAdsListFragment() {
         viewModel.loadAds()
     }
 
+    override fun onAdViewed(adId: String) {
+        viewModel.incrementViewCount(adId)
+    }
+
     override fun createAdActionListener() = object : AdCardAdapter.OnAdActionListener {
         override fun onRespondClick(ad: Ad) {}
         override fun onCancelResponseClick(responseId: String, adId: String, authorId: String) {

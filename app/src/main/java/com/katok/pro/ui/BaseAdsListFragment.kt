@@ -37,6 +37,7 @@ abstract class BaseAdsListFragment : Fragment() { // Не наследуем Bas
 
     protected abstract fun onRefresh()  // вызывается при свайпе
     protected abstract fun createAdActionListener(): AdCardAdapter.OnAdActionListener
+    protected open fun onAdViewed(adId: String) {}
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,7 +55,12 @@ abstract class BaseAdsListFragment : Fragment() { // Не наследуем Bas
     private fun setupRecyclerView() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val initialRinks = rinkListFlow.value ?: emptyList()
-        adapter = AdCardAdapter(initialRinks, createAdActionListener(), requireContext())
+        adapter = AdCardAdapter(
+            initialRinks,
+            createAdActionListener(),
+            requireContext(),
+            onAdViewed = { adId -> onAdViewed(adId) }
+        )
         recyclerView.adapter = adapter
     }
 

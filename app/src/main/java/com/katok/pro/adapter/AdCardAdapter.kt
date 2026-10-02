@@ -34,7 +34,8 @@ import java.util.Objects
 class AdCardAdapter(
     rinks: List<Rink>?,
     private val listener: OnAdActionListener,
-    private val context: Context
+    private val context: Context,
+    private val onAdViewed: (String) -> Unit = {}
 ) : ListAdapter<Ad, AdCardAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     private var currentUserId: String? = null
@@ -122,6 +123,23 @@ class AdCardAdapter(
 
         val ad = getItem(position)
         val isOwner = currentUserId != null && ad.authorId != null && currentUserId == ad.authorId
+
+        // --- Отображение счётчика просмотров (только автору) ---
+        if (isOwner) {
+            holder.tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
+            holder.tvViews.visibility = View.VISIBLE
+        } else {
+            holder.tvViews.visibility = View.GONE
+        }
+
+        // --- Отправка события "просмотр" один раз за сессию ---
+        val adIdForView = ad.id?.toString()
+        if (adIdForView != null && !isOwner) {
+            if (com.katok.pro.util.ViewedAdsTracker.markViewed(adIdForView)) {
+                holder.itemView.post { onAdViewed(adIdForView) }
+            }
+        }
+
         val isArchived = "ARCHIVED" == ad.status
         val isModeration = "MODERATION" == ad.status
         val isFilled = "FILLED" == ad.status
@@ -654,6 +672,7 @@ class AdCardAdapter(
         var responsesAdapter: ResponsesAdapter? = null
 
         val tvResponseStatus: TextView = itemView.findViewById(R.id.tv_response_status)
+        val tvViews: TextView = itemView.findViewById(R.id.tv_views)
     }
 
     private fun dpToPx(dp: Int, ctx: Context): Int {

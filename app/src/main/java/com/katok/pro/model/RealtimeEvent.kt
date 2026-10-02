@@ -12,6 +12,7 @@ data class RealtimeEvent(
         AD_CREATED,
         AD_UPDATED,
         AD_DELETED,
+        AD_VIEWS_UPDATED,
         RESPONSE_ADDED,
         RESPONSE_REMOVED,
         RESPONSE_APPROVED,

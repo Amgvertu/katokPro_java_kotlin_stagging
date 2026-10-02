@@ -409,6 +409,7 @@ class WebSocketManager(
             "AD_CREATED" -> RealtimeEvent.Type.AD_CREATED
             "AD_UPDATED" -> RealtimeEvent.Type.AD_UPDATED
             "AD_DELETED" -> RealtimeEvent.Type.AD_DELETED
+            "AD_VIEWS_UPDATED" -> RealtimeEvent.Type.AD_VIEWS_UPDATED
             "RESPONSE" -> RealtimeEvent.Type.RESPONSE_ADDED
             "RESPONSE_ADDED" -> RealtimeEvent.Type.RESPONSE_ADDED
             "RESPONSE_REMOVED" -> RealtimeEvent.Type.RESPONSE_REMOVED
@@ -426,6 +427,8 @@ class WebSocketManager(
             RealtimeEvent.Type.AD_DELETED,
             RealtimeEvent.Type.AD_UPDATED ->
                 gson.fromJson(payloadElement, Ad::class.java)
+            RealtimeEvent.Type.AD_VIEWS_UPDATED ->                       // ← НОВОЕ
+                gson.fromJson(payloadElement, com.katok.pro.model.AdViewsUpdate::class.java)
             RealtimeEvent.Type.RESPONSE_ADDED,
             RealtimeEvent.Type.RESPONSE_REMOVED,
             RealtimeEvent.Type.RESPONSE_APPROVED,

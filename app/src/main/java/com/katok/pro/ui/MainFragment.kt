@@ -43,6 +43,7 @@ import com.katok.pro.services.WebSocketForegroundService
 import com.katok.pro.util.ProfileHelper
 import com.katok.pro.util.SessionManager
 import com.katok.pro.util.ToastHelper
+import com.katok.pro.model.AdViewsUpdate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -94,7 +95,8 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
         val feedAdapter = FeedAdapter(
             context = requireContext(),
             adListener = createAdActionListener(),
-            onAdvertClick = { advert -> onAdvertClick(advert) }
+            onAdvertClick = { advert -> onAdvertClick(advert) },
+            onAdViewed = { adId -> viewModel.incrementViewCount(adId) }
         )
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = feedAdapter
@@ -774,6 +776,11 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
                     viewModel.updateAds(current)
                 }
             }
+            RealtimeEvent.Type.AD_VIEWS_UPDATED -> {
+                val update = event.payload as? AdViewsUpdate ?: return
+                viewModel.updateAdViews(update.adId, update.viewsCount)
+            }
+
             RealtimeEvent.Type.RESPONSE_ADDED -> {
                 val response = event.payload as? Response ?: return
                 val adId = event.entityId ?: response.adId ?: return

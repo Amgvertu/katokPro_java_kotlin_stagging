@@ -74,6 +74,9 @@ data class Ad(
     @SerializedName("acceptedForwardsCount")
     var acceptedForwardsCount: Int? = null,
 
+    @SerializedName("viewsCount")
+    var viewsCount: Long? = null,
+
     @SerializedName("cityId")
     var cityId: Int? = null,
 
