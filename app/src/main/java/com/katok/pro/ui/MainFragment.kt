@@ -101,11 +101,12 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = feedAdapter
 
-        // Загружаем userId для адаптера
+        // Загружаем userId и роль для адаптера
         viewLifecycleOwner.lifecycleScope.launch {
             val userId = sessionManager.getUserId()
             feedAdapter.setCurrentUserId(userId)
             feedAdapter.setCurrentUserPhone(sessionManager.getUserPhone())
+            feedAdapter.setAdmin(sessionManager.isAdmin())
         }
 
         // SwipeRefresh

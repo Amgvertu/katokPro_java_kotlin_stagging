@@ -51,6 +51,13 @@ class AdCardAdapter(
         notifyDataSetChanged()
     }
 
+    private var isAdmin: Boolean = false
+
+    fun setAdmin(admin: Boolean) {
+        isAdmin = admin
+        notifyDataSetChanged()
+    }
+
     fun getCurrentUserId(): String? = currentUserId
     fun getCurrentUserPhone(): String? = currentUserPhone
 
@@ -125,7 +132,15 @@ class AdCardAdapter(
         val isOwner = currentUserId != null && ad.authorId != null && currentUserId == ad.authorId
 
         // --- Отображение счётчика просмотров (только автору) ---
-        if (isOwner) {
+        /*if (isOwner) {
+            holder.tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
+            holder.tvViews.visibility = View.VISIBLE
+        } else {
+            holder.tvViews.visibility = View.GONE
+        }*/
+
+        // --- Отображение счётчика просмотров (только админу) ---
+        if (isAdmin) {
             holder.tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
             holder.tvViews.visibility = View.VISIBLE
         } else {

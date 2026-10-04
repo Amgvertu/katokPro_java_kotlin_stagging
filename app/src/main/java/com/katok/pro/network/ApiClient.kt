@@ -282,9 +282,9 @@ class ApiClient private constructor() {
                 .addInterceptor(logging)
                 .addInterceptor(authInterceptor)
                 .authenticator(authenticator)
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
 
             // Для отладки с локальным сервером (только debug сборка)
             if (BuildConfig.DEBUG && currentBaseUrl.contains("192.168")) {

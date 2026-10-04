@@ -58,6 +58,13 @@ class FeedAdapter(
         notifyDataSetChanged()
     }
 
+    private var isAdmin: Boolean = false
+
+    fun setAdmin(admin: Boolean) {
+        isAdmin = admin
+        notifyDataSetChanged()
+    }
+
     fun updateRinks(newRinks: List<Rink>) {
         rinks = newRinks
         Log.d("FeedAdapter", "updateRinks: received ${newRinks.size} rinks")
@@ -76,7 +83,7 @@ class FeedAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_AD) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ad_card, parent, false)
-            AdViewHolder(view, adListener, currentUserId, currentUserPhone, rinks, onAdViewed)
+            AdViewHolder(view, adListener, currentUserId, currentUserPhone, rinks, onAdViewed, isAdmin)
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_advertising_card, parent, false)
             AdvertViewHolder(view, onAdvertClick)
@@ -87,7 +94,7 @@ class FeedAdapter(
         val item = items[position]
         when (holder) {
             is AdViewHolder -> {
-                holder.updateUserData(currentUserId, currentUserPhone, rinks)
+                holder.updateUserData(currentUserId, currentUserPhone, rinks, isAdmin)
                 holder.bind(item as Ad)
             }
             is AdvertViewHolder -> holder.bind(item as Advertising)
@@ -103,7 +110,8 @@ class FeedAdapter(
         private var currentUserId: String?,
         private var currentUserPhone: String?,
         private var rinks: List<Rink>,
-        private val onAdViewed: (String) -> Unit
+        private val onAdViewed: (String) -> Unit,
+        private var isAdmin: Boolean
     ) : RecyclerView.ViewHolder(itemView) {
 
         // Все View, как в item_ad_card.xml
@@ -134,16 +142,25 @@ class FeedAdapter(
         private val tvResponseStatus: TextView = itemView.findViewById(R.id.tv_response_status)
         private val tvViews: TextView = itemView.findViewById(R.id.tv_views)
 
-        fun updateUserData(userId: String?, phone: String?, newRinks: List<Rink>) {
+        fun updateUserData(userId: String?, phone: String?, newRinks: List<Rink>, admin: Boolean) {
             currentUserId = userId
             currentUserPhone = phone
             rinks = newRinks
+            isAdmin = admin
         }
 
         fun bind(ad: Ad) {
             val isOwner = currentUserId != null && ad.authorId != null && currentUserId == ad.authorId
             // --- Счётчик просмотров (только автору) ---
-            if (isOwner) {
+            /*if (isOwner) {
+                tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
+                tvViews.visibility = View.VISIBLE
+            } else {
+                tvViews.visibility = View.GONE
+            }*/
+
+            // --- Счётчик просмотров (только админу) ---
+            if (isAdmin) {
                 tvViews.text = "👁 ${ad.viewsCount ?: 0L}"
                 tvViews.visibility = View.VISIBLE
             } else {

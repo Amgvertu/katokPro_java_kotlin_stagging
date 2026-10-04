@@ -18,6 +18,7 @@ import com.katok.pro.model.Rink
 import com.katok.pro.util.ToastHelper
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.katok.pro.util.SessionManager
 
 abstract class BaseAdsListFragment : Fragment() { // Не наследуем BaseFragment, т.к. layout создаётся в наследниках
 
@@ -62,6 +63,12 @@ abstract class BaseAdsListFragment : Fragment() { // Не наследуем Bas
             onAdViewed = { adId -> onAdViewed(adId) }
         )
         recyclerView.adapter = adapter
+
+        // Устанавливаем флаг админа (роль берём из SessionManager)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val sm = SessionManager(requireContext())
+            adapter.setAdmin(sm.isAdmin())
+        }
     }
 
     private fun setupObservers() {
